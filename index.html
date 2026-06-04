@@ -1,0 +1,961 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Voodoo UGC Hub</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a18;font-size:13px}
+/* Header */
+.hdr{background:#fff;border-bottom:1px solid #e0dfd8;padding:10px 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100}
+.logo{width:24px;height:24px;background:#1a1a18;border-radius:4px;color:#fff;font-weight:700;font-size:11px;display:flex;align-items:center;justify-content:center}
+.hdr-t{font-size:14px;font-weight:600;margin-left:8px}
+.hdr-s{font-size:10px;color:#888;margin-left:6px}
+/* Tabs */
+.tabs{background:#fff;border-bottom:1px solid #e0dfd8;display:flex;padding:0 20px;position:sticky;top:44px;z-index:99}
+.tab{padding:8px 16px;cursor:pointer;border-bottom:2px solid transparent;font-size:12px;font-weight:500;color:#888;user-select:none;white-space:nowrap}
+.tab.active{color:#1a1a18;border-bottom-color:#1a1a18}
+.tab:hover:not(.active){color:#555}
+/* Page */
+.page{padding:16px 20px}
+.panel{display:none}.panel.active{display:block}
+/* Stats */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(100px,1fr));gap:8px;margin-bottom:16px}
+.sc{background:#fff;border:1px solid #e0dfd8;border-radius:7px;padding:10px 12px}
+.sc-l{font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+.sc-v{font-size:19px;font-weight:600}
+/* Section headers */
+.sec{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin:16px 0 8px;display:flex;align-items:center;gap:6px}
+.sec-count{background:#e0dfd8;color:#888;border-radius:10px;font-size:10px;padding:1px 6px;font-weight:600}
+/* Filters */
+.fbar{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+.fbar select,.fbar input[type=text]{height:28px;padding:0 8px;border:1px solid #e0dfd8;border-radius:5px;font-size:11px;background:#fff;color:#1a1a18;outline:none}
+.fbar input[type=text]{width:140px}
+.fbar select:focus,.fbar input:focus{border-color:#888}
+.btn{height:28px;padding:0 10px;border:1px solid #e0dfd8;background:#fff;border-radius:5px;font-size:11px;cursor:pointer;white-space:nowrap}
+.btn:hover{background:#f0efe8}
+.btn-dark{background:#1a1a18;color:#fff;border-color:#1a1a18}
+.btn-dark:hover{background:#333}
+/* Table wrapper */
+.tw{border:1px solid #e0dfd8;border-radius:8px;overflow:hidden;margin-bottom:8px}
+table{width:100%;border-collapse:collapse;background:#fff;font-size:11px}
+th{background:#f8f7f4;padding:6px 10px;text-align:left;font-weight:600;font-size:10px;color:#888;text-transform:uppercase;letter-spacing:.05em;border-bottom:1px solid #e0dfd8;white-space:nowrap}
+td{padding:6px 10px;border-bottom:1px solid #f0efe8;vertical-align:middle}
+tr:last-child>td,tr.sub-last>td{border-bottom:none}
+tr.main-row:hover>td{background:#fafaf8;cursor:pointer}
+tr.main-row.expanded>td{background:#fafaf7}
+tr.sub-table-row td{background:#fafaf4;border-bottom:1px solid #f0efe8;padding:5px 10px}
+tr.sub-table-row:last-child td{border-bottom:1px solid #e0dfd8}
+.empty td{color:#aaa;text-align:center;padding:14px;font-style:italic}
+a{color:#185fa5;text-decoration:none}
+a:hover{text-decoration:underline}
+/* Badges */
+.badge{display:inline-block;padding:2px 6px;border-radius:4px;font-size:10px;font-weight:600;white-space:nowrap;line-height:1.4}
+.b-green{background:#e1f5ee;color:#085041}
+.b-amber{background:#faeeda;color:#633806}
+.b-red{background:#fcebeb;color:#791f1f}
+.b-blue{background:#e6f1fb;color:#0c447c}
+.b-gray{background:#f1efe8;color:#444441}
+.b-purple{background:#eeedfe;color:#3c3489}
+.b-warn{background:#faeeda;color:#854f0b;border:1px solid #fac775}
+/* Game tags */
+.gtag{display:inline-block;padding:1px 5px;border-radius:3px;font-size:10px;font-weight:600;margin:1px}
+.g-SAL,.g-MC{background:#faeeda;color:#633806}
+.g-CCA{background:#e6f1fb;color:#0c447c}
+.g-MBS{background:#e1f5ee;color:#085041}
+.g-PO2{background:#f1efe8;color:#444441}
+.g-Rush{background:#fcebeb;color:#791f1f}
+.g-Blitz{background:#f1efe8;color:#555}
+/* Inputs */
+.inp{height:22px;padding:0 5px;border:1px solid #e0dfd8;border-radius:4px;font-size:11px;color:#1a1a18;background:#fff;outline:none;width:100%}
+.inp:focus{border-color:#888}
+.inp.ok{border-color:#085041;color:#085041}
+.inp.sm{width:80px}
+.inp.md{width:110px}
+.sel{height:22px;padding:0 4px;border:1px solid #e0dfd8;border-radius:4px;font-size:11px;background:#fff;outline:none;cursor:pointer;max-width:130px}
+.sel:focus{border-color:#888}
+.chk{width:13px;height:13px;cursor:pointer;accent-color:#085041}
+/* Received countdown */
+.recv-count{font-size:11px;font-weight:600;color:#888}
+.recv-count.done{color:#085041}
+.recv-tick{color:#085041;font-size:14px;font-weight:700}
+/* Del / expand */
+.del{width:18px;height:18px;background:none;border:none;cursor:pointer;color:#ccc;font-size:13px;border-radius:3px;padding:0;line-height:1}
+.del:hover{color:#791f1f;background:#fcebeb}
+.expander{width:18px;height:18px;background:none;border:none;cursor:pointer;color:#888;font-size:11px;border-radius:3px;padding:0;transition:transform .15s;line-height:1}
+.expander.open{transform:rotate(90deg)}
+/* Creator sections */
+.cr-section{margin-bottom:4px}
+.cr-section-hdr{display:flex;align-items:center;gap:6px;padding:5px 8px;background:#f8f7f4;border:1px solid #e0dfd8;border-radius:6px;cursor:pointer;user-select:none;margin-bottom:4px}
+.cr-section-hdr:hover{background:#f0efe8}
+.cr-section-toggle{font-size:10px;color:#888;transition:transform .15s}
+.cr-section-toggle.open{transform:rotate(90deg)}
+/* Star */
+.star{color:#f5a623;font-size:13px;cursor:pointer;user-select:none}
+.star.off{color:#e0dfd8}
+/* Drag */
+.dragging{opacity:.4}
+.drag-over{border-top:2px solid #185fa5}
+/* Month cards */
+.month-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-bottom:16px}
+.mc{background:#fff;border:1px solid #e0dfd8;border-radius:7px;padding:12px}
+.mc-hd{display:flex;justify-content:space-between;padding-bottom:6px;margin-bottom:6px;border-bottom:1px solid #f0efe8}
+.mc-name{font-size:12px;font-weight:600}
+.mc-total{font-size:12px;font-weight:600;color:#633806}
+.mc-row{display:flex;align-items:center;gap:4px;padding:2px 0;font-size:11px;border-bottom:1px solid #fafaf8}
+.mc-row:last-child{border-bottom:none}
+.mc-n{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:500}
+.mc-m{color:#aaa;font-size:10px;white-space:nowrap}
+.game-bar{display:flex;gap:6px;flex-wrap:wrap}
+.gchip{padding:5px 10px;border-radius:6px;font-size:11px;font-weight:600}
+/* Toast */
+.toast{position:fixed;bottom:14px;right:14px;background:#1a1a18;color:#fff;font-size:11px;padding:7px 12px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:999}
+.toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="hdr">
+  <div style="display:flex;align-items:center">
+    <div class="logo">V</div><span class="hdr-t">UGC Hub</span><span class="hdr-s">Voodoo Gaming</span>
+  </div>
+  <div style="display:flex;gap:8px;align-items:center">
+    <span id="sync-lbl" style="font-size:10px;color:#888"></span>
+    <button class="btn" style="font-size:11px" onclick="exportData()" title="Télécharger un snapshot JSON des données modifiées">⬇ Export données</button>
+    <button class="btn btn-dark" style="font-size:11px" onclick="addCreator()">+ Créateur</button>
+  </div>
+</div>
+<div class="tabs">
+  <div class="tab active" onclick="switchTab('creators',this)">👥 Créateurs</div>
+  <div class="tab" onclick="switchTab('content',this)">🎬 Contenu</div>
+  <div class="tab" onclick="switchTab('budget',this)">💰 Budget</div>
+  <div class="tab" onclick="switchTab('recap',this)">📊 Recap mensuel</div>
+  <div class="tab" onclick="switchTab('legend',this)">📖 Légende</div>
+</div>
+
+<div class="page">
+
+<!-- CREATORS -->
+<div class="panel active" id="tab-creators">
+  <div class="stats" id="cr-stats"></div>
+  <div class="fbar">
+    <input type="text" id="cr-q" placeholder="Rechercher..." oninput="renderCreators()">
+    <select id="cr-game" onchange="renderCreators()"><option value="">Tous jeux</option><option>SAL</option><option>CCA</option><option>MBS</option><option>PO2</option><option>Rush</option><option>Blitz</option><option>MC</option></select>
+    <select id="cr-month" onchange="renderCreators()"><option value="">Tous mois</option><option>March 2026</option><option>April 2026</option><option>May 2026</option><option>June 2026</option></select>
+    <button class="btn" id="mail-btn" onclick="checkMails()">📧 Vérifier mails</button>
+  </div>
+  <div id="cr-sections"></div>
+</div>
+
+<!-- CONTENT -->
+<div class="panel" id="tab-content">
+  <div class="stats" id="ct-stats"></div>
+  <div class="fbar">
+    <select id="ct-month" onchange="renderContent()"><option value="">Tous mois</option><option>March 2026</option><option>April 2026</option><option>May 2026</option><option>June 2026</option></select>
+    <select id="ct-game" onchange="renderContent()"><option value="">Tous jeux</option><option>SAL</option><option>CCA</option><option>MBS</option><option>PO2</option><option>Rush</option><option>Blitz</option><option>MC</option></select>
+    <select id="ct-status" onchange="renderContent()"><option value="">Tous statuts</option><option>In production</option><option>Received</option><option>Validated</option><option>Rework</option></select>
+    <input type="text" id="ct-inf" placeholder="Recherche INF code..." oninput="renderContent()" style="width:160px">
+    <button class="btn" onclick="addContentRow()">+ Ajouter ligne</button>
+  </div>
+  <div id="ct-active"></div>
+  <div id="ct-done-wrap" style="display:none">
+    <div class="sec">✅ Collabs terminées <span class="sec-count" id="ct-done-count">0</span></div>
+    <div id="ct-done"></div>
+  </div>
+</div>
+
+<!-- RECAP -->
+<div class="panel" id="tab-recap">
+  <div class="fbar">
+    <select id="rc-month" onchange="renderRecap()"><option value="">Tous les mois</option><option>March 2026</option><option>April 2026</option><option>May 2026</option><option>June 2026</option></select>
+  </div>
+  <div id="rc-body"></div>
+</div>
+
+<!-- LEGEND -->
+<div class="panel" id="tab-legend">
+  <div style="max-width:700px">
+    <div class="sec">👥 Statuts créateurs</div>
+    <div class="tw" style="margin-bottom:16px"><table><tbody>
+      <tr><td style="width:160px"><span class="badge b-blue">📋 À contacter</span></td><td>Créateur sourcé, pas encore contacté.</td></tr>
+      <tr><td><span class="badge b-blue">📨 Contacté · J+X</span></td><td>Mail envoyé, en attente de réponse. Timer basé sur la date du dernier mail envoyé.</td></tr>
+      <tr><td><span class="badge b-warn">À relancer · J+3</span></td><td>Pas de réponse après 72h. Un bouton ✉ Relancé permet de remettre le timer à zéro.</td></tr>
+      <tr><td><span class="badge b-gray">No answer</span></td><td>Aucune réponse après 7 jours. Le créateur passe automatiquement en "Out".</td></tr>
+      <tr><td><span class="badge b-amber">💬 En négociation</span></td><td>Discussion en cours (prix, package, livrables).</td></tr>
+      <tr><td><span class="badge b-green">🟢 Actif</span></td><td>Deal signé, vidéos en cours ce mois. Créé automatiquement à la signature.</td></tr>
+      <tr><td><span class="badge b-purple">⭐ Long Terme</span></td><td>Membre du crew de confiance. Marqué d'une ⭐ même quand actif. Cumulable avec "Actif".</td></tr>
+      <tr><td><span class="badge b-gray">🔁 Churned</span></td><td>Collab passée, ne pas réactiver.</td></tr>
+      <tr><td><span class="badge b-red">🚫 Out</span></td><td>Pas d'entente trouvée, jamais collaboré.</td></tr>
+      <tr><td><span class="badge b-blue">📧 À répondre</span></td><td>Mail reçu non lu dans ta boîte. Apparaît après "Vérifier mails".</td></tr>
+    </tbody></table></div>
+
+    <div class="sec">🎬 Statuts contenu</div>
+    <div class="tw" style="margin-bottom:16px"><table><tbody>
+      <tr><td style="width:160px"><span class="badge b-gray">En prod</span></td><td>Vidéo commandée, pas encore reçue.</td></tr>
+      <tr><td><span class="badge b-amber">En cours</span></td><td>Certaines vidéos reçues, d'autres en attente (ex: 1/3).</td></tr>
+      <tr><td><span class="badge b-green">Reçu ✓</span></td><td>Toutes les vidéos du batch reçues. La ligne passe en section "Collabs terminées".</td></tr>
+      <tr><td><span class="badge b-purple">Rework</span></td><td>Vidéo à refaire ou en attente de correction.</td></tr>
+    </tbody></table></div>
+
+    <div class="sec">📊 Colonnes contenu (fenêtre dépliante)</div>
+    <div class="tw" style="margin-bottom:16px"><table><tbody>
+      <tr><td style="width:110px"><strong>INF Code</strong></td><td>Code interne de la vidéo dans le système VGP (ex: INF9086).</td></tr>
+      <tr><td><strong>Lien VGP</strong></td><td>URL du fichier vidéo hébergé sur la plateforme VGP. Devient cliquable (↗) une fois rempli.</td></tr>
+      <tr><td><strong>Reçu ✓</strong></td><td>Cocher quand la vidéo est physiquement reçue et vérifiée.</td></tr>
+      <tr><td><strong>Contrat ✓</strong></td><td>Cocher quand le contrat est signé par le créateur.</td></tr>
+      <tr><td><strong>Drive</strong></td><td>Lien vers le dossier Drive partagé avec le créateur (défini dans l'onglet Créateurs).</td></tr>
+    </tbody></table></div>
+
+    <div class="sec">🔢 Compteur reçu (0/3)</div>
+    <p style="font-size:12px;color:#444;line-height:1.6">Le compteur en colonne <strong>Reçu</strong> indique combien de vidéos du batch ont été cochées comme reçues dans la fenêtre dépliante. Quand le compte est complet (ex: 3/3), il affiche un ✓ vert et la ligne descend automatiquement dans "Collabs terminées".</p>
+
+    <div class="sec" style="margin-top:16px">⭐ Long terme vs Actif</div>
+    <p style="font-size:12px;color:#444;line-height:1.6">Un créateur <strong>Long Terme</strong> fait partie de ton crew de confiance. Il peut aussi être <strong>Actif</strong> un mois donné (des vidéos sont commandées). Quand il est actif, il apparaît dans la section "Actifs" avec son étoile ⭐ pour le distinguer des nouveaux créateurs. Quand il n'est pas activé ce mois-ci, il reste dans "Long Terme".</p>
+  </div>
+</div>
+
+<!-- BUDGET -->
+<div class="panel" id="tab-budget">
+  <div class="stats" id="bg-stats"></div>
+  <div class="sec">Par mois</div>
+  <div class="month-grid" id="bg-months"></div>
+  <div class="sec">Par jeu</div>
+  <div class="game-bar" id="bg-games"></div>
+</div>
+
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// ===================== DATA =====================
+var SK='vg-hub-v4';
+var NOW=Date.now();
+var DAY=86400000;
+
+var BASE_CREATORS=[
+  {id:'c1',handle:'marygaming17',url:'https://tiktok.com/@marygaming17',followers:'46K',games:['SAL'],ppv:100,cls:'active',isLT:true,email:'marygaming17.17@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c2',handle:'liamgimig',url:'https://tiktok.com/@liamgimig',followers:'302K',games:['PO2'],ppv:125,cls:'active',isLT:false,email:'liamgimig@slogansocial.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c3',handle:'katxkelly',url:'',followers:'~',games:['PO2','SAL'],ppv:200,cls:'active',isLT:true,email:'katkellyny@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c4',handle:'alex.cochrane',url:'https://tiktok.com/@alex.cochrane',followers:'~',games:['Blitz','CCA'],ppv:300,cls:'long-term',isLT:true,email:'awalkercochrane@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c5',handle:'claymakesmoney',url:'https://tiktok.com/@claymakesmoney',followers:'~',games:['SAL','CCA','MBS'],ppv:200,cls:'active',isLT:true,email:'clayadamsmusic@gmail.com',contactedAt:null,driveUrl:'',note:'$50 bonus référence'},
+  {id:'c6',handle:'itssavagge',url:'',followers:'~',games:['CCA','Rush'],ppv:185,cls:'active',isLT:false,email:'itssavagge@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c7',handle:'vietgramp',url:'https://tiktok.com/@vietgramp',followers:'~',games:['Rush','PO2','SAL','CCA'],ppv:100,cls:'active',isLT:true,email:'vandonnguyen11@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c8',handle:'pierrefll',url:'https://tiktok.com/@pierrefll',followers:'650K',games:['Rush'],ppv:500,cls:'active',isLT:false,email:'Pierrefleurimond19@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c9',handle:'tonymuguio',url:'https://tiktok.com/@tonymuguio',followers:'240K',games:['Rush','PO2'],ppv:375,cls:'active',isLT:false,email:'tonymuguio@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c10',handle:'famousque5',url:'https://tiktok.com/@famousque5',followers:'330K',games:['Rush'],ppv:500,cls:'active',isLT:false,email:'Reevesdaquavius86@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  // June batch - signed
+  {id:'j1',handle:'malachigwyn.ugc',url:'https://tiktok.com/@malachigwyn.ugc',followers:'591',games:['CCA'],ppv:100,cls:'active',isLT:false,email:'malachigwyn.ugc@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
+  {id:'j2',handle:'ugcwithisaac',url:'https://tiktok.com/@ugcwithisaac',followers:'1K',games:['CCA'],ppv:167,cls:'active',isLT:false,email:'ugcwithisaac@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:'$500 pack 3'},
+  {id:'j3',handle:'stevenstart2finish',url:'https://tiktok.com/@stevenstart2finish',followers:'1.4K',games:['MC'],ppv:150,cls:'active',isLT:false,email:'UGCbySteven@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
+  {id:'j4',handle:'darindavis2324',url:'https://tiktok.com/@darindavis2324',followers:'472',games:['MC','SAL','MBS'],ppv:150,cls:'active',isLT:false,email:'Darinugcgenx@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
+  {id:'j5',handle:'joshugccreator',url:'https://tiktok.com/@joshugccreator',followers:'1K',games:['CCA','MC'],ppv:150,cls:'active',isLT:false,email:'josh.truenorthugc@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
+  {id:'j6',handle:'ugc_roy',url:'https://tiktok.com/@ugc_roy',followers:'3.8K',games:['MC','SAL','MBS'],ppv:200,cls:'active',isLT:false,email:'roy@ugcroy.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
+  {id:'j7',handle:'chrisrockugc',url:'https://tiktok.com/@chrisrockugc',followers:'505',games:['MC','SAL','MBS'],ppv:150,cls:'active',isLT:false,email:'chris@chrisrockugc.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
+  // June batch - in negotiation
+  {id:'j8',handle:'helvio_ugc',url:'https://tiktok.com/@helvio_ugc',followers:'1K',games:['CCA'],ppv:100,cls:'in-negotiation',isLT:false,email:'contact.helvio@gmail.com',contactedAt:NOW-4*DAY,driveUrl:'',note:'offre $300'},
+  {id:'j9',handle:'ugcwithcaleb',url:'https://tiktok.com/@ugcwithcaleb',followers:'1K',games:['CCA'],ppv:150,cls:'in-negotiation',isLT:false,email:'hello@ugcwithcaleb.com',contactedAt:NOW-4*DAY,driveUrl:'',note:'offre $450'},
+  {id:'j10',handle:'doug_ugc',url:'https://tiktok.com/@doug_ugc',followers:'200',games:['CCA','SAL','MBS'],ppv:150,cls:'in-negotiation',isLT:false,email:'Collabwithdoug@gmail.com',contactedAt:NOW-4*DAY,driveUrl:'',note:'offre $450'},
+  {id:'j11',handle:'nextwaveugc',url:'https://tiktok.com/@nextwaveugc',followers:'810',games:['MC'],ppv:180,cls:'in-negotiation',isLT:false,email:'chadbartlettcreates@gmail.com',contactedAt:NOW-4*DAY,driveUrl:'',note:'offre $540'},
+  {id:'j12',handle:'chrismugc',url:'https://tiktok.com/@chrismugc',followers:'1.2K',games:['MC','SAL','MBS'],ppv:200,cls:'in-negotiation',isLT:false,email:'chrismccarthyugc@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $600'},
+  {id:'j13',handle:'brycebrandyugc',url:'https://tiktok.com/@brycebrandyugc',followers:'1.3K',games:['MC'],ppv:200,cls:'in-negotiation',isLT:false,email:'hello@brycebrandyugc.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $600'},
+  {id:'j14',handle:'ksocialugc',url:'https://tiktok.com/@ksocialugc',followers:'1.4K',games:['MBS','SAL'],ppv:167,cls:'in-negotiation',isLT:false,email:'ksocialugc@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $500'},
+  {id:'j15',handle:'masonpatrickmedia',url:'https://tiktok.com/@masonpatrickmedia',followers:'3.7K',games:['CCA'],ppv:200,cls:'in-negotiation',isLT:false,email:'MasonPatrickUGC@yahoo.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $600'},
+  {id:'j16',handle:'smcconnellugc',url:'https://tiktok.com/@smcconnellugc',followers:'515',games:['MC','SAL','MBS'],ppv:150,cls:'in-negotiation',isLT:false,email:'mcconnells1987@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $450'},
+  {id:'j17',handle:'ugcbylouis',url:'https://tiktok.com/@ugcbylouis',followers:'1.3K',games:['CCA'],ppv:150,cls:'in-negotiation',isLT:false,email:'louishugc@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $450'},
+  {id:'j18',handle:'smitty_creates',url:'https://tiktok.com/@smitty_creates',followers:'838',games:['MC'],ppv:200,cls:'in-negotiation',isLT:false,email:'Ugcbysmitty@gmail.com',contactedAt:NOW-2*DAY,driveUrl:'',note:'offre $600'},
+  {id:'j19',handle:'raycordovaugc',url:'https://tiktok.com/@raycordovaugc',followers:'2.5K',games:['MC','SAL','MBS'],ppv:250,cls:'in-negotiation',isLT:false,email:'contentbycordovarc@gmail.com',contactedAt:NOW-2*DAY,driveUrl:'',note:'dernier effort $250/v'},
+  {id:'j20',handle:'joshiugc',url:'https://tiktok.com/@joshiugc',followers:'15K',games:['CCA'],ppv:150,cls:'in-negotiation',isLT:false,email:'joshuaugcmedia@gmail.com',contactedAt:NOW-2*DAY,driveUrl:'',note:'brief envoyé'},
+  {id:'j21',handle:'getyouastek',url:'https://tiktok.com/@getyouastek',followers:'4K',games:['CCA'],ppv:150,cls:'in-negotiation',isLT:false,email:'ugcwithstek@gmail.com',contactedAt:NOW-2*DAY,driveUrl:'',note:'offre $450'},
+  {id:'j22',handle:'ugcbyteej',url:'https://tiktok.com/@ugcbyteej',followers:'379',games:['MC','SAL','MBS'],ppv:150,cls:'contacted',isLT:false,email:'hello@ugcbyteej.com',contactedAt:NOW-1*DAY,driveUrl:'',note:''},
+  {id:'j23',handle:'autumntriesugc',url:'https://tiktok.com/@autumntriesugc',followers:'—',games:['CCA','MBS'],ppv:150,cls:'in-negotiation',isLT:false,email:'autumntriesugc@gmail.com',contactedAt:NOW-2*DAY,driveUrl:'',note:'offre $150/v'},
+  {id:'j24',handle:'chefreactions',url:'https://tiktok.com/@chefreactions',followers:'3.7M',games:['CCA'],ppv:0,cls:'out',isLT:false,email:'regan@coastlinecreatives.com',contactedAt:NOW-5*DAY,driveUrl:'',note:'pas un fit'},
+  {id:'j25',handle:'ugc.eliah',url:'https://tiktok.com/@ugc.eliah',followers:'1.8K',games:['CCA'],ppv:0,cls:'out',isLT:false,email:'Eliah@createwithvsn.com',contactedAt:NOW-5*DAY,driveUrl:'',note:'partenariat exclusif'},
+  {id:'j26',handle:'jen_creates_ugc',url:'https://tiktok.com/@jen_creates_ugc',followers:'1.2K',games:['MC'],ppv:0,cls:'out',isLT:false,email:'jens.creates.ugc@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:'budget trop bas'}
+];
+
+// Items = per-video sub-rows
+function makeItems(n){var a=[];for(var i=0;i<n;i++)a.push({vgp:'',inf:'',received:false});return a;}
+
+var BASE_CONTENT=[
+  // March - validated
+  {id:'v1',creator:'katxkelly',cid:'c3',month:'March 2026',game:'PO2',total:3,price:600,contract:true,items:makeItems(3).map(function(x){x.received=true;return x;})},
+  {id:'v2',creator:'katxkelly',cid:'c3',month:'March 2026',game:'SAL',total:3,price:600,contract:true,items:makeItems(3).map(function(x){x.received=true;return x;})},
+  {id:'v3',creator:'alex.cochrane',cid:'c4',month:'March 2026',game:'Blitz',total:8,price:2400,contract:true,items:makeItems(8).map(function(x){x.received=true;return x;})},
+  {id:'v4',creator:'claymakesmoney',cid:'c5',month:'March 2026',game:'SAL',total:5,price:1000,contract:true,items:makeItems(5).map(function(x){x.received=true;return x;})},
+  {id:'v5',creator:'claymakesmoney',cid:'c5',month:'March 2026',game:'CCA',total:4,price:800,contract:true,items:makeItems(4).map(function(x){x.received=true;return x;})},
+  {id:'v6',creator:'marygaming17',cid:'c1',month:'March 2026',game:'SAL',total:9,price:450,contract:true,items:makeItems(9).map(function(x){x.received=true;return x;})},
+  {id:'v7',creator:'itssavagge',cid:'c6',month:'March 2026',game:'CCA',total:3,price:555,contract:true,items:makeItems(3).map(function(x){x.received=true;return x;})},
+  {id:'v8',creator:'vietgramp',cid:'c7',month:'March 2026',game:'Rush',total:2,price:200,contract:true,items:makeItems(2).map(function(x){x.received=true;return x;})},
+  // April
+  {id:'v9',creator:'tonymuguio',cid:'c9',month:'April 2026',game:'Rush',total:2,price:750,contract:true,items:makeItems(2)},
+  {id:'v10',creator:'tonymuguio',cid:'c9',month:'April 2026',game:'PO2',total:2,price:750,contract:true,items:makeItems(2)},
+  {id:'v11',creator:'pierrefll',cid:'c8',month:'April 2026',game:'Rush',total:4,price:2000,contract:true,items:makeItems(4)},
+  {id:'v12',creator:'famousque5',cid:'c10',month:'April 2026',game:'Rush',total:4,price:2000,contract:true,items:makeItems(4)},
+  // June - in production
+  {id:'v13',creator:'malachigwyn.ugc',cid:'j1',month:'June 2026',game:'CCA',total:3,price:300,contract:false,items:makeItems(3)},
+  {id:'v14',creator:'ugcwithisaac',cid:'j2',month:'June 2026',game:'CCA',total:3,price:500,contract:false,items:makeItems(3)},
+  {id:'v15',creator:'stevenstart2finish',cid:'j3',month:'June 2026',game:'MC',total:3,price:450,contract:false,items:makeItems(3)},
+  {id:'v16',creator:'darindavis2324',cid:'j4',month:'June 2026',game:'MC',total:1,price:150,contract:false,items:makeItems(1)},
+  {id:'v17',creator:'darindavis2324',cid:'j4',month:'June 2026',game:'SAL',total:1,price:150,contract:false,items:makeItems(1)},
+  {id:'v18',creator:'darindavis2324',cid:'j4',month:'June 2026',game:'MBS',total:1,price:150,contract:false,items:makeItems(1)},
+  {id:'v19',creator:'joshugccreator',cid:'j5',month:'June 2026',game:'CCA',total:2,price:300,contract:false,items:makeItems(2)},
+  {id:'v20',creator:'joshugccreator',cid:'j5',month:'June 2026',game:'MC',total:1,price:150,contract:false,items:makeItems(1)},
+  {id:'v21',creator:'ugc_roy',cid:'j6',month:'June 2026',game:'MC',total:1,price:200,contract:false,items:makeItems(1)},
+  {id:'v22',creator:'ugc_roy',cid:'j6',month:'June 2026',game:'SAL',total:1,price:200,contract:false,items:makeItems(1)},
+  {id:'v23',creator:'ugc_roy',cid:'j6',month:'June 2026',game:'MBS',total:1,price:200,contract:false,items:makeItems(1)},
+  {id:'v24',creator:'chrisrockugc',cid:'j7',month:'June 2026',game:'MC',total:1,price:150,contract:false,items:makeItems(1)},
+  {id:'v25',creator:'chrisrockugc',cid:'j7',month:'June 2026',game:'SAL',total:1,price:150,contract:false,items:makeItems(1)},
+  {id:'v26',creator:'chrisrockugc',cid:'j7',month:'June 2026',game:'MBS',total:1,price:150,contract:false,items:makeItems(1)}
+];
+
+// ===================== STATE =====================
+var U={};
+function loadU(){try{U=JSON.parse(localStorage.getItem(SK)||'{}')}catch(e){U={}}}
+function saveU(){localStorage.setItem(SK,JSON.stringify(U))}
+
+function getCreators(){
+  var del=U._dc||[]; var add=U._ac||[];
+  return BASE_CREATORS.filter(function(c){return del.indexOf(c.id)<0})
+    .map(function(c){return merge(c,U[c.id])})
+    .concat(add);
+}
+function getContent(){
+  var del=U._dv||[]; var add=U._av||[];
+  return BASE_CONTENT.filter(function(v){return del.indexOf(v.id)<0})
+    .map(function(v){
+      var o=merge(v,U[v.id]);
+      if(U[v.id]&&U[v.id].items){
+        o.items=v.items.map(function(it,i){return merge(it,(U[v.id].items||[])[i]||{});});
+        // handle extra items added by user
+        if(U[v.id].items.length>v.items.length){
+          for(var i=v.items.length;i<U[v.id].items.length;i++){o.items.push(merge({vgp:'',inf:'',received:false},U[v.id].items[i]));}
+        }
+      }
+      return o;
+    }).concat(add);
+}
+function merge(base,over){
+  if(!over) return Object.assign({},base);
+  var r=Object.assign({},base);
+  for(var k in over){if(k!=='items')r[k]=over[k];}
+  return r;
+}
+function receivedCount(v){return v.items.filter(function(x){return x.received}).length;}
+function isDone(v){return v.items.length>0&&receivedCount(v)===v.items.length;}
+
+function creatorDrive(cid){
+  var cr=getCreators().find(function(c){return c.id===cid;});
+  return cr?(cr.driveUrl||''):'';
+}
+
+// ===================== HELPERS =====================
+function fmt(n){return Number(n||0).toLocaleString('fr-FR');}
+function fmtP(n){return n>0?'$'+fmt(n):'—';}
+function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function gtags(games){return (games||[]).map(function(g){return '<span class="gtag g-'+g+'">'+g+'</span>';}).join('');}
+
+var CLS_META={
+  'to-contact':{label:'À contacter',badge:'b-blue',icon:'📋'},
+  'contacted':{label:'Contactés',badge:'b-amber',icon:'📨'},
+  'in-negotiation':{label:'En négociation',badge:'b-amber',icon:'💬'},
+  'active':{label:'Actifs ce mois',badge:'b-green',icon:'🟢'},
+  'long-term':{label:'Long Terme ★',badge:'b-purple',icon:'⭐'},
+  'churned':{label:'Churned',badge:'b-gray',icon:'🔁'},
+  'out':{label:'Out',badge:'b-red',icon:'🚫'}
+};
+var CLS_ORDER=['active','long-term','in-negotiation','contacted','to-contact','churned','out'];
+
+// Mail badges (populated by checkMails)
+var _mailBadges={};
+
+// Timer helper — "À relancer" based on lastSentAt (last email sent date)
+function contactBadge(c){
+  var mailBadge=_mailBadges[c.id]?'<span class="badge b-blue" style="font-size:9px;margin-left:3px">📧 À répondre</span>':'';
+  // only show timer for contacted/in-negotiation
+  if(c.cls!=='contacted'&&c.cls!=='in-negotiation') return mailBadge;
+  var t=c.lastSentAt||c.contactedAt;
+  if(!t) return mailBadge;
+  var days=Math.floor((NOW-t)/DAY);
+  if(days>=7) return '<span class="badge b-gray" style="font-size:9px">No answer</span>'+mailBadge;
+  if(days>=3) return '<span class="badge b-warn" style="font-size:9px">À relancer · J+'+days+'</span>'+
+    '<button class="btn" style="height:18px;font-size:9px;padding:0 5px;margin-left:3px" onclick="markRelanced(\''+c.id+'\',event)">✉ Relancé</button>'+mailBadge;
+  return '<span class="badge b-blue" style="font-size:9px">Envoyé · J+'+days+'</span>'+mailBadge;
+}
+
+function markRelanced(id,e){
+  e.stopPropagation();
+  editCr(id,'lastSentAt',Date.now());
+  renderCreators();
+  toast('Date de relance mise à jour');
+}
+
+async function checkMails(){
+  var btn=document.getElementById('mail-btn');
+  if(!btn) return;
+  btn.textContent='⏳ Checking...'; btn.disabled=true;
+  try{
+    var res=await window.cowork.callMcpTool(
+      'mcp__c08352be-cdf1-4daa-bfb6-273426373b83__search_threads',
+      {query:'is:unread in:inbox newer_than:14d',pageSize:50}
+    );
+    var threads=(res&&res.threads)||[];
+    // Collect all sender emails from any unread message NOT from Marion
+    var senderEmails={};
+    threads.forEach(function(t){
+      (t.messages||[]).forEach(function(m){
+        if(!m.sender) return;
+        // skip Marion's own sent messages
+        if(m.sender.indexOf('marion.hermant@voodoo.io')>=0) return;
+        // check thread has unread label (at thread or message level)
+        var hasUnread=(m.labelIds&&(m.labelIds.indexOf('UNREAD')>=0||m.labelIds.indexOf('INBOX')>=0));
+        if(!hasUnread) hasUnread=true; // be inclusive — if thread returned, consider it
+        if(hasUnread){
+          // extract email — handle "Name <email>" and plain email formats
+          var raw=m.sender.replace(/\s/g,'');
+          var match=raw.match(/<([^>]+)>/);
+          var email=(match?match[1]:raw).toLowerCase();
+          senderEmails[email]=true;
+          // also try matching just the domain part of sender display name
+          var plain=m.sender.toLowerCase().replace(/<[^>]+>/,'').trim();
+          if(plain) senderEmails[plain]=true;
+        }
+      });
+    });
+    _mailBadges={};
+    getCreators().forEach(function(c){
+      if(!c.email) return;
+      var ce=c.email.toLowerCase().trim();
+      if(senderEmails[ce]) _mailBadges[c.id]=true;
+      // also check handle match in sender name
+      var h=c.handle.toLowerCase().replace(/\./g,'');
+      Object.keys(senderEmails).forEach(function(s){
+        if(s.indexOf(h)>=0) _mailBadges[c.id]=true;
+      });
+    });
+    renderCreators();
+    var n=Object.keys(_mailBadges).length;
+    toast(n?n+' créateur(s) avec mail en attente':'Aucun mail créateur non lu trouvé');
+  }catch(e){
+    console.error(e);
+    toast('Erreur mail : '+(e.message||String(e)));
+  }
+  btn.textContent='📧 Vérifier mails'; btn.disabled=false;
+}
+
+// ===================== CREATORS =====================
+var _sectionOpen={};
+var _dragId=null,_dragSection=null;
+
+function renderCreators(){
+  var q=(document.getElementById('cr-q').value||'').toLowerCase();
+  var gf=document.getElementById('cr-game').value;
+  var mf=document.getElementById('cr-month').value;
+  var all=getCreators().filter(function(c){
+    if(q&&c.handle.toLowerCase().indexOf(q)<0) return false;
+    if(gf&&(!c.games||c.games.indexOf(gf)<0)) return false;
+    if(mf){
+      // show creators that have content in this month
+      var cv=getContent().filter(function(v){return v.cid===c.id&&v.month===mf;});
+      if(!cv.length) return false;
+    }
+    return true;
+  });
+
+  // stats
+  var signed=all.filter(function(c){return c.cls==='active'||c.cls==='long-term';}).length;
+  var nego=all.filter(function(c){return c.cls==='in-negotiation';}).length;
+  var toC=all.filter(function(c){return c.cls==='to-contact';}).length;
+  var lt=all.filter(function(c){return c.isLT;}).length;
+  document.getElementById('cr-stats').innerHTML=
+    '<div class="sc"><div class="sc-l">Total</div><div class="sc-v">'+all.length+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Actifs</div><div class="sc-v" style="color:#085041">'+signed+'</div></div>'+
+    '<div class="sc"><div class="sc-l">⭐ Long terme</div><div class="sc-v" style="color:#633806">'+lt+'</div></div>'+
+    '<div class="sc"><div class="sc-l">En négo</div><div class="sc-v">'+nego+'</div></div>'+
+    '<div class="sc"><div class="sc-l">À contacter</div><div class="sc-v">'+toC+'</div></div>';
+
+  var html='';
+  CLS_ORDER.forEach(function(cls){
+    var rows=all.filter(function(c){
+      if(cls==='long-term') return c.isLT&&c.cls!=='active'&&c.cls!=='churned'&&c.cls!=='out';
+      if(cls==='active') return c.cls==='active';
+      return c.cls===cls;
+    });
+    if(!rows.length) return;
+    var meta=CLS_META[cls]||{label:cls,badge:'b-gray',icon:''};
+    var open=_sectionOpen[cls]!==false;
+    html+='<div class="cr-section" id="cs-'+cls+'">';
+    html+='<div class="cr-section-hdr" onclick="toggleSection(\''+cls+'\')">';
+    html+='<span class="cr-section-toggle'+(open?' open':'')+'">▶</span>';
+    html+='<span>'+meta.icon+' '+meta.label+'</span>';
+    html+='<span class="sec-count">'+rows.length+'</span>';
+    html+='</div>';
+    if(open){
+      html+='<div class="tw"><table><thead><tr><th></th><th>Créateur</th><th>Followers</th><th>Jeux</th><th>$/vidéo</th><th>Drive</th><th>Notes</th><th></th><th></th></tr></thead><tbody id="cb-'+cls+'">';
+      rows.forEach(function(c){
+        var timer=contactBadge(c);
+        var star='<span class="star'+(c.isLT?'':' off')+'" onclick="toggleLT(\''+c.id+'\',event)" title="Long terme">★</span>';
+        var drv=c.driveUrl?'<a href="'+esc(c.driveUrl)+'" target="_blank" style="font-size:10px">Drive ↗</a>':'<input class="inp md" placeholder="Drive URL" value="" oninput="editCr(\''+c.id+'\',\'driveUrl\',this.value)" style="width:90px">';
+        var gameHtml=gtags(c.games)+' <button class="btn" style="height:18px;font-size:10px;padding:0 5px" onclick="addGame(\''+c.id+'\')">+</button>';
+        var cNameHtml=c.url?'<a href="'+esc(c.url)+'" target="_blank">@'+esc(c.handle)+'</a>':'@'+esc(c.handle);
+        html+='<tr draggable="true" data-id="'+c.id+'" data-sec="'+cls+'"'+
+          ' ondragstart="dragStart(event,\''+c.id+'\',\''+cls+'\')"'+
+          ' ondragover="dragOver(event)"'+
+          ' ondrop="drop(event,\''+cls+'\')"'+
+          ' style="cursor:grab">'+
+          '<td style="width:20px">'+star+'</td>'+
+          '<td>'+cNameHtml+' '+timer+'</td>'+
+          '<td style="color:#888">'+esc(c.followers)+'</td>'+
+          '<td>'+gameHtml+'</td>'+
+          '<td><input class="inp sm" type="number" value="'+c.ppv+'" oninput="editCr(\''+c.id+'\',\'ppv\',+this.value)" style="width:55px"></td>'+
+          '<td>'+drv+'</td>'+
+          '<td><input class="inp" placeholder="Notes..." value="'+esc(c.note||'')+'" oninput="editCr(\''+c.id+'\',\'note\',this.value)" style="width:120px"></td>'+
+          '<td>'+
+            '<select class="sel" onchange="changeClsCr(\''+c.id+'\',this.value)" style="font-size:10px">'+
+            CLS_ORDER.map(function(k){return '<option value="'+k+'"'+(c.cls===k?' selected':'')+'>'+CLS_META[k].icon+' '+CLS_META[k].label+'</option>';}).join('')+
+            '</select>'+
+          '</td>'+
+          '<td><button class="del" onclick="delCr(\''+c.id+'\')" title="Supprimer">×</button></td>'+
+          '</tr>';
+      });
+      html+='</tbody></table></div>';
+    }
+    html+='</div>';
+  });
+  document.getElementById('cr-sections').innerHTML=html;
+}
+
+function toggleSection(cls){
+  _sectionOpen[cls]=_sectionOpen[cls]===false?true:false;
+  renderCreators();
+}
+function toggleLT(id,e){
+  e.stopPropagation();
+  var cr=getCreators().find(function(c){return c.id===id;});
+  editCr(id,'isLT',!cr.isLT);
+  renderCreators();
+}
+function editCr(id,field,val){
+  if(!U[id]) U[id]={};
+  U[id][field]=val;
+  // update base too
+  var b=BASE_CREATORS.find(function(c){return c.id===id;});
+  if(b) b[field]=val;
+  var a=(U._ac||[]).find(function(c){return c.id===id;});
+  if(a) a[field]=val;
+  saveU();
+}
+function changeClsCr(id,cls){
+  var wasCls=getCreators().find(function(c){return c.id===id;});
+  editCr(id,'cls',cls);
+  // if moved to active and has no content rows yet → auto-add placeholder
+  if(cls==='active'||cls==='long-term'){
+    editCr(id,'contactedAt',Date.now());
+    var existing=getContent().filter(function(v){return v.cid===id;});
+    if(!existing.length){
+      var cr=getCreators().find(function(c){return c.id===id;});
+      var games=cr&&cr.games?cr.games:[];
+      if(games.length>0){
+        if(!U._av) U._av=[];
+        games.slice(0,1).forEach(function(g){
+          var nid='va'+Date.now()+Math.random().toString(36).slice(2,5);
+          U._av.push({id:nid,creator:cr.handle,cid:id,month:'June 2026',game:g,total:3,price:cr.ppv*3||0,contract:false,items:makeItems(3)});
+        });
+        saveU();
+        toast('@'+cr.handle+' ajouté dans Contenu → Juin 2026');
+      }
+    }
+  }
+  renderCreators();
+}
+function delCr(id){
+  if(!confirm('Supprimer ce créateur ?')) return;
+  if(!U._dc) U._dc=[];
+  U._dc.push(id);
+  if(U._ac) U._ac=(U._ac||[]).filter(function(c){return c.id!==id;});
+  saveU(); renderCreators(); toast('Supprimé');
+}
+function addCreator(){
+  var id='cu'+Date.now();
+  var c={id:id,handle:'Nouveau créateur',url:'',followers:'',games:['CCA'],ppv:150,cls:'to-contact',isLT:false,email:'',contactedAt:null,driveUrl:'',note:''};
+  if(!U._ac) U._ac=[];
+  U._ac.push(c);
+  saveU(); _sectionOpen['to-contact']=true; renderCreators();
+  toast('Créateur ajouté dans "À contacter"');
+}
+function addGame(id){
+  var g=prompt('Jeu à ajouter (SAL, CCA, MBS, PO2, Rush, Blitz, MC):');
+  if(!g||!g.trim()) return;
+  var cr=getCreators().find(function(c){return c.id===id;});
+  var games=(cr&&cr.games)?cr.games.slice():[];
+  if(games.indexOf(g.trim())<0) games.push(g.trim());
+  editCr(id,'games',games);
+  renderCreators();
+}
+// Drag & drop
+function dragStart(e,id,sec){_dragId=id;_dragSection=sec;e.target.classList.add('dragging');}
+function dragOver(e){e.preventDefault();var tr=e.target.closest('tr');if(tr){tr.classList.add('drag-over');}}
+function drop(e,sec){
+  e.preventDefault();
+  document.querySelectorAll('.drag-over').forEach(function(el){el.classList.remove('drag-over');});
+  document.querySelectorAll('.dragging').forEach(function(el){el.classList.remove('dragging');});
+  var targetId=e.target.closest('[data-id]');
+  if(!targetId||!_dragId||targetId.dataset.id===_dragId) return;
+  // Simple order tracking
+  if(!U._order) U._order={};
+  if(!U._order[sec]) U._order[sec]=getCreators().filter(function(c){return c.cls===sec;}).map(function(c){return c.id;});
+  var ord=U._order[sec];
+  var fromIdx=ord.indexOf(_dragId);
+  var toIdx=ord.indexOf(targetId.dataset.id);
+  if(fromIdx<0){ord.push(_dragId);fromIdx=ord.length-1;}
+  if(toIdx<0) return;
+  ord.splice(fromIdx,1);ord.splice(toIdx,0,_dragId);
+  saveU(); renderCreators();
+}
+
+// ===================== CONTENT =====================
+var _expanded={};
+
+function ctStats(rows){
+  var total=rows.reduce(function(a,v){return a+v.total;},0);
+  var recv=rows.reduce(function(a,v){return a+receivedCount(v);},0);
+  var done=rows.filter(isDone).length;
+  var inprod=rows.filter(function(v){return !isDone(v);}).length;
+  document.getElementById('ct-stats').innerHTML=
+    '<div class="sc"><div class="sc-l">Vidéos</div><div class="sc-v">'+total+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Reçues</div><div class="sc-v" style="color:#085041">'+recv+'/'+total+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Terminées</div><div class="sc-v" style="color:#085041">'+done+'</div></div>'+
+    '<div class="sc"><div class="sc-l">En prod</div><div class="sc-v" style="color:#633806">'+inprod+'</div></div>';
+}
+
+function renderContent(){
+  var mf=document.getElementById('ct-month').value;
+  var gf=document.getElementById('ct-game').value;
+  var sf=document.getElementById('ct-status').value;
+  var inf=(document.getElementById('ct-inf').value||'').trim().toLowerCase();
+  var all=getContent().filter(function(v){
+    if(mf&&v.month!==mf) return false;
+    if(gf&&v.game!==gf) return false;
+    if(sf){
+      var d=isDone(v);
+      if(sf==='Received'&&!d) return false;
+      if(sf==='In production'&&d) return false;
+      if(sf==='Validated'&&!d) return false;
+    }
+    if(inf){
+      // search across all item INF codes and creator name
+      var found=v.creator.toLowerCase().indexOf(inf)>=0||v.game.toLowerCase().indexOf(inf)>=0;
+      if(!found) found=v.items.some(function(it){return it.inf&&it.inf.toLowerCase().indexOf(inf)>=0;});
+      if(!found) return false;
+    }
+    return true;
+  });
+
+  ctStats(all);
+
+  var active=all.filter(function(v){return !isDone(v);});
+  var done=all.filter(isDone);
+
+  document.getElementById('ct-active').innerHTML=buildContentTable(active,false);
+  document.getElementById('ct-done').innerHTML=buildContentTable(done,true);
+  document.getElementById('ct-done-count').textContent=done.length;
+  document.getElementById('ct-done-wrap').style.display=done.length?'block':'none';
+  bindContentEvents();
+}
+
+function buildContentTable(rows,isDoneSection){
+  if(!rows.length) return '<div class="tw"><table><tbody><tr class="empty"><td colspan="9">Aucune ligne</td></tr></tbody></table></div>';
+  var html='<div class="tw"><table><thead><tr>'+
+    '<th style="width:22px"></th>'+
+    '<th>Créateur</th><th>Mois</th><th>Jeu</th><th>#</th><th>Prix</th>'+
+    '<th>Contrat</th><th>Statut</th><th>Drive</th><th>Reçu</th><th></th>'+
+    '</tr></thead><tbody>';
+  rows.forEach(function(v){
+    var rc=receivedCount(v);
+    var done=isDone(v);
+    var recCell=done
+      ?'<span class="recv-tick">✓</span>'
+      :'<span class="recv-count">'+rc+'/'+v.total+'</span>';
+    var drv=creatorDrive(v.cid);
+    var drvCell=drv?'<a href="'+esc(drv)+'" target="_blank" style="font-size:10px">↗</a>':'—';
+    var stBadge=done
+      ?'<span class="badge b-green">Reçu ✓</span>'
+      :rc>0
+        ?'<span class="badge b-amber">En cours</span>'
+        :'<span class="badge b-gray">En prod</span>';
+    var expOpen=_expanded[v.id];
+    html+='<tr class="main-row'+(expOpen?' expanded':'')+'" data-vid="'+v.id+'">'+
+      '<td><button class="expander'+(expOpen?' open':'')+'" data-vid="'+v.id+'">▶</button></td>'+
+      '<td style="font-weight:500">@'+esc(v.creator)+'</td>'+
+      '<td style="color:#888;white-space:nowrap;font-size:10px">'+v.month+'</td>'+
+      '<td><span class="gtag g-'+v.game+'">'+v.game+'</span></td>'+
+      '<td style="font-weight:600">'+v.total+'</td>'+
+      '<td>'+fmtP(v.price)+'</td>'+
+      '<td style="text-align:center"><input type="checkbox" class="chk"'+(v.contract?' checked':'')+' onchange="editVR(\''+v.id+'\',\'contract\',this.checked)"></td>'+
+      '<td>'+stBadge+'</td>'+
+      '<td>'+drvCell+'</td>'+
+      '<td style="text-align:center">'+recCell+'</td>'+
+      '<td><button class="del" onclick="delVR(\''+v.id+'\')" title="Supprimer">×</button></td>'+
+      '</tr>';
+    // Expanded sub-rows
+    if(expOpen){
+      html+='<tr><td colspan="11" style="padding:0;border-bottom:1px solid #e0dfd8">'+
+        '<table style="width:100%;border-collapse:collapse;background:#fafaf4">'+
+        '<thead><tr>'+
+        '<th style="padding:5px 10px;width:120px">INF Code</th>'+
+        '<th style="padding:5px 10px">Lien VGP</th>'+
+        '<th style="padding:5px 10px;width:60px;text-align:center">Reçu</th>'+
+        '</tr></thead><tbody>';
+      v.items.forEach(function(it,i){
+        html+='<tr class="sub-table-row'+(i===v.items.length-1?' sub-last':'')+'">'+
+          '<td><input class="inp" placeholder="INF code..." value="'+esc(it.inf||'')+'"'+
+            ' oninput="editItem(\''+v.id+'\','+i+',\'inf\',this.value)"'+
+            ' style="width:110px"></td>'+
+          '<td>'+(it.vgp?'<a href="'+esc(it.vgp)+'" target="_blank" style="font-size:10px;margin-right:4px">↗</a>':'')+
+            '<input class="inp" placeholder="Coller lien VGP..." value="'+esc(it.vgp||'')+'"'+
+            ' oninput="editItem(\''+v.id+'\','+i+',\'vgp\',this.value)"'+
+            ' style="width:220px"></td>'+
+          '<td style="text-align:center"><input type="checkbox" class="chk"'+(it.received?' checked':'')+
+            ' onchange="editItem(\''+v.id+'\','+i+',\'received\',this.checked)"></td>'+
+          '</tr>';
+      });
+      html+='</tbody></table></td></tr>';
+    }
+  });
+  html+='</tbody></table></div>';
+  return html;
+}
+
+function bindContentEvents(){
+  document.querySelectorAll('.expander').forEach(function(btn){
+    btn.onclick=function(e){
+      e.stopPropagation();
+      var id=this.getAttribute('data-vid');
+      _expanded[id]=!_expanded[id];
+      renderContent();
+    };
+  });
+}
+
+function editVR(id,field,val){
+  if(!U[id]) U[id]={};
+  U[id][field]=val;
+  var b=BASE_CONTENT.find(function(v){return v.id===id;});
+  if(b) b[field]=val;
+  var a=(U._av||[]).find(function(v){return v.id===id;});
+  if(a) a[field]=val;
+  saveU(); renderContent();
+}
+function editItem(vid,idx,field,val){
+  if(!U[vid]) U[vid]={};
+  var base=BASE_CONTENT.find(function(v){return v.id===vid;});
+  var items=(U[vid].items)||(base?base.items.map(function(x){return Object.assign({},x);}):makeItems(3));
+  while(items.length<=idx) items.push({vgp:'',inf:'',received:false});
+  items[idx][field]=val;
+  U[vid].items=items;
+  if(base){base.items[idx]=base.items[idx]||{vgp:'',inf:'',received:false};base.items[idx][field]=val;}
+  saveU(); renderContent();
+}
+function delVR(id){
+  if(!confirm('Supprimer ?')) return;
+  if(!U._dv) U._dv=[];
+  U._dv.push(id);
+  if(U._av) U._av=(U._av||[]).filter(function(v){return v.id!==id;});
+  saveU(); renderContent(); toast('Supprimé');
+}
+function addContentRow(){
+  var id='va'+Date.now();
+  var r={id:id,creator:'',cid:'',month:'June 2026',game:'CCA',total:1,price:0,contract:false,items:makeItems(1)};
+  if(!U._av) U._av=[];
+  U._av.push(r);
+  saveU(); renderContent(); toast('Ligne ajoutée');
+}
+
+// ===================== BUDGET =====================
+var MONTHS=[
+  {name:'March 2026',budget:19050,videos:84},
+  {name:'April 2026',budget:9650,videos:46},
+  {name:'May 2026',budget:1050,videos:35},
+  {name:'June 2026',budget:3200,videos:21}
+];
+var GAMES=[
+  {g:'SAL',name:'Sand Loop',v:47,cls:'g-SAL'},
+  {g:'CCA',name:'Castle Busters',v:36,cls:'g-CCA'},
+  {g:'MC',name:'Mob Control',v:18,cls:'g-MC'},
+  {g:'MBS',name:'Marble Sort',v:37,cls:'g-MBS'},
+  {g:'PO2',name:'Paper.io 2',v:22,cls:'g-PO2'},
+  {g:'Rush',name:'Rush Arena',v:22,cls:'g-Rush'},
+  {g:'Blitz',name:'Blitz',v:15,cls:'g-Blitz'}
+];
+
+function renderBudget(){
+  var totalB=MONTHS.reduce(function(a,m){return a+m.budget;},0);
+  var totalV=MONTHS.reduce(function(a,m){return a+m.videos;},0);
+  var avgPPV=totalV>0?Math.round(totalB/totalV):0;
+  document.getElementById('bg-stats').innerHTML=
+    '<div class="sc"><div class="sc-l">Budget total</div><div class="sc-v" style="color:#633806">$'+fmt(totalB)+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Vidéos commandées</div><div class="sc-v">'+totalV+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Moy. $/vidéo</div><div class="sc-v">$'+fmt(avgPPV)+'</div></div>';
+
+  document.getElementById('bg-months').innerHTML=MONTHS.map(function(m){
+    var avg=m.videos>0?Math.round(m.budget/m.videos):0;
+    var cvids=getContent().filter(function(v){return v.month===m.name;});
+    var rows=cvids.reduce(function(acc,v){
+      var k=v.creator+v.game;
+      if(!acc[k]) acc[k]={creator:v.creator,game:v.game,vids:0,price:0,done:0};
+      acc[k].vids+=v.total;acc[k].price+=v.price;acc[k].done+=receivedCount(v);
+      return acc;
+    },{});
+    var rowHtml=Object.values(rows).map(function(r){
+      return '<div class="mc-row">'+
+        '<span class="mc-n">@'+esc(r.creator)+'</span>'+
+        '<span class="mc-m"><span class="gtag g-'+r.game+'">'+r.game+'</span></span>'+
+        '<span class="mc-m">'+r.vids+'v</span>'+
+        '<span class="mc-m">'+fmtP(r.price)+'</span>'+
+        '</div>';
+    }).join('');
+    return '<div class="mc"><div class="mc-hd">'+
+      '<span class="mc-name">'+m.name+'</span>'+
+      '<span class="mc-total">$'+fmt(m.budget)+'</span>'+
+      '</div>'+
+      '<div style="font-size:10px;color:#888;margin-bottom:6px">'+m.videos+' vidéos · $'+fmt(avg)+'/v</div>'+
+      rowHtml+'</div>';
+  }).join('');
+
+  document.getElementById('bg-games').innerHTML=GAMES.map(function(g){
+    return '<div class="gchip '+(g.cls||'g-PO2')+'" style="min-width:90px">'+g.name+' <strong>'+g.v+'</strong></div>';
+  }).join('');
+}
+
+// ===================== RECAP =====================
+function renderRecap(){
+  var mf=document.getElementById('rc-month').value;
+  var months=mf?[mf]:['March 2026','April 2026','May 2026','June 2026'];
+  var all=getContent();
+  var html='';
+  months.forEach(function(month){
+    var rows=all.filter(function(v){return v.month===month;});
+    if(!rows.length) return;
+    var totalV=rows.reduce(function(a,v){return a+v.total;},0);
+    var totalR=rows.reduce(function(a,v){return a+receivedCount(v);},0);
+    var totalP=rows.reduce(function(a,v){return a+v.price;},0);
+    var doneRows=rows.filter(isDone).length;
+    var contracts=rows.filter(function(v){return v.contract;}).length;
+    // per game
+    var byGame={};
+    rows.forEach(function(v){
+      if(!byGame[v.game]) byGame[v.game]={total:0,received:0,price:0};
+      byGame[v.game].total+=v.total;
+      byGame[v.game].received+=receivedCount(v);
+      byGame[v.game].price+=v.price;
+    });
+    // per creator
+    var byCr={};
+    rows.forEach(function(v){
+      if(!byCr[v.creator]) byCr[v.creator]={total:0,received:0,price:0,games:[]};
+      byCr[v.creator].total+=v.total;
+      byCr[v.creator].received+=receivedCount(v);
+      byCr[v.creator].price+=v.price;
+      if(byCr[v.creator].games.indexOf(v.game)<0) byCr[v.creator].games.push(v.game);
+    });
+    html+='<div style="background:#fff;border:1px solid #e0dfd8;border-radius:8px;padding:16px;margin-bottom:16px">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f0efe8">';
+    html+='<div style="font-size:15px;font-weight:700">'+month+'</div>';
+    html+='<div style="font-size:13px;font-weight:600;color:#633806">$'+fmt(totalP)+'</div></div>';
+    // summary cards
+    html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">';
+    html+='<div class="sc"><div class="sc-l">Vidéos cmd.</div><div class="sc-v">'+totalV+'</div></div>';
+    html+='<div class="sc"><div class="sc-l">Reçues</div><div class="sc-v" style="color:#085041">'+totalR+'</div></div>';
+    html+='<div class="sc"><div class="sc-l">Terminées</div><div class="sc-v">'+doneRows+'</div></div>';
+    html+='<div class="sc"><div class="sc-l">Contrats ✓</div><div class="sc-v">'+contracts+'</div></div>';
+    html+='</div>';
+    // by game
+    html+='<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Par jeu</div>';
+    html+='<div class="tw" style="margin-bottom:12px"><table><thead><tr><th>Jeu</th><th>Vidéos</th><th>Reçues</th><th>Budget</th></tr></thead><tbody>';
+    Object.keys(byGame).forEach(function(g){
+      var r=byGame[g];
+      html+='<tr><td><span class="gtag g-'+g+'">'+g+'</span></td>'+
+        '<td style="font-weight:600">'+r.total+'</td>'+
+        '<td><span style="color:'+(r.received===r.total?'#085041':'#633806')+'">'+r.received+'/'+r.total+'</span></td>'+
+        '<td>'+fmtP(r.price)+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+    // by creator
+    html+='<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Par créateur</div>';
+    html+='<div class="tw"><table><thead><tr><th>Créateur</th><th>Jeux</th><th>Vidéos</th><th>Reçues</th><th>Budget</th></tr></thead><tbody>';
+    Object.keys(byCr).forEach(function(cr){
+      var r=byCr[cr];
+      var done=r.received===r.total;
+      html+='<tr>'+
+        '<td style="font-weight:500">@'+esc(cr)+(done?' <span class="badge b-green" style="font-size:9px">✓</span>':'')+'</td>'+
+        '<td>'+r.games.map(function(g){return '<span class="gtag g-'+g+'">'+g+'</span>';}).join('')+'</td>'+
+        '<td>'+r.total+'</td>'+
+        '<td><span style="color:'+(done?'#085041':'#633806')+'">'+r.received+'/'+r.total+'</span></td>'+
+        '<td>'+fmtP(r.price)+'</td></tr>';
+    });
+    html+='</tbody></table></div>';
+    html+='</div>';
+  });
+  document.getElementById('rc-body').innerHTML=html||'<p style="color:#aaa;font-size:12px;padding:20px 0">Aucune donnée pour ce mois.</p>';
+}
+
+// ===================== TABS =====================
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active');});
+  el.classList.add('active');
+  document.getElementById('tab-'+name).classList.add('active');
+  if(name==='content') renderContent();
+  else if(name==='budget') renderBudget();
+  else if(name==='recap') renderRecap();
+  else if(name==='creators') renderCreators();
+}
+
+// ===================== TOAST =====================
+var _tt;
+function toast(msg){
+  var el=document.getElementById('toast');
+  el.textContent=msg;el.classList.add('show');
+  clearTimeout(_tt);_tt=setTimeout(function(){el.classList.remove('show');},2500);
+}
+
+// ===================== TIMERS =====================
+function checkTimings(){
+  getCreators().forEach(function(c){
+    if(c.cls==='contacted'&&c.contactedAt){
+      var days=Math.floor((NOW-c.contactedAt)/DAY);
+      if(days>=7){editCr(c.id,'cls','out');editCr(c.id,'note',(c.note||'')+' [No answer]');}
+    }
+  });
+}
+
+// ===================== EXPORT =====================
+function exportData(){
+  // Snapshot of current full state — creators + content with all manual edits applied
+  var snapshot={
+    exportedAt:new Date().toISOString(),
+    creators:getCreators(),
+    content:getContent().map(function(v){
+      return {
+        id:v.id,creator:v.creator,cid:v.cid,month:v.month,
+        game:v.game,total:v.total,price:v.price,contract:v.contract,
+        items:v.items.map(function(it){return {vgp:it.vgp,inf:it.inf,received:it.received};})
+      };
+    })
+  };
+  var json=JSON.stringify(snapshot,null,2);
+  var blob=new Blob([json],{type:'application/json'});
+  var a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download='voodoo-hub-data-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  toast('Données exportées — partage ce fichier à Claude pour mettre à jour le hub');
+}
+
+// ===================== INIT =====================
+loadU();
+checkTimings();
+renderCreators();
+renderBudget();
+</script>
+</body>
+</html>
