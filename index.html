@@ -194,15 +194,10 @@ a:hover{text-decoration:underline}
     <button class="btn btn-dark" style="font-size:11px" onclick="syncNotion()">🔄 Sync Notion</button>
     <button class="btn" onclick="addPO2Row()">+ Ajouter</button>
   </div>
-  <div class="tw" id="po2-table-wrap">
-    <table>
-      <thead><tr>
-        <th>Créateur</th><th>TikTok</th><th>Agence</th><th>Status</th>
-        <th>$/vidéo</th><th>$/pack 4v</th><th>Vidéos restantes</th>
-        <th>Concepts</th><th>Drive</th><th></th>
-      </tr></thead>
-      <tbody id="po2-body"></tbody>
-    </table>
+  <div id="po2-active"></div>
+  <div id="po2-done-wrap" style="display:none">
+    <div class="sec">✅ Collabs terminées <span class="sec-count" id="po2-done-count">0</span></div>
+    <div id="po2-done"></div>
   </div>
 </div>
 
@@ -1034,73 +1029,134 @@ function exportData(){
 // ===================== PO2 ORGANIQUE =====================
 var PO2_SK='vg-po2-v1';
 var BASE_PO2=[
-  {id:'po1',name:'Aarham',url:'https://www.tiktok.com/@aarham.dent',agency:'Direct',status:'Signed',ppv:null,pp4:500,videosLeft:0,drive:'https://drive.google.com/drive/folders/12ptamzMo_rXihouv12aYkTUTE67LTr-l',concepts:['Food Challenge','Mom Paper','Millennial Boss','X Paper.io2']},
-  {id:'po2',name:'Cooper',url:'https://www.tiktok.com/@therealcoopjt',agency:'Direct',status:'Signed',ppv:150,pp4:600,videosLeft:3,drive:'https://drive.google.com/drive/folders/1-_r7Uy-qREWeylc1UVf8MxzcWyIgoAgE',concepts:['Task Game','','','']},
-  {id:'po3',name:'Calvin',url:'https://www.tiktok.com/@.queasycal',agency:'Direct',status:'Signed',ppv:125,pp4:500,videosLeft:3,drive:'https://drive.google.com/drive/folders/12c68h3J_maXfO9jtzqqwayP19SyPb3YD',concepts:['Basketball Challenge','','','']},
-  {id:'po4',name:'Liam',url:'https://www.tiktok.com/@liamgimig',agency:'SLOGAN SOCIAL',status:'Signed',ppv:250,pp4:2000,videosLeft:0,drive:'https://drive.google.com/drive/folders/1gnuvnadTeaw3u3IeqScy3dTWy_bCLxcc',concepts:['Running Challenge','Spicy Food Challenge','Ingredients Challenge','Zoom Paper']},
-  {id:'po5',name:'Raynaldo',url:'https://www.tiktok.com/@thatboiinaldo',agency:'SLOGAN SOCIAL',status:'Signed',ppv:250,pp4:1000,videosLeft:0,drive:'https://drive.google.com/drive/folders/1rkJStxywwano28AHfCL3JWwDY12Og3ka',concepts:['Broke Up Paper','Excited Paper','Taking a Pic Gf','Kidnapped Paper']},
-  {id:'po6',name:'Ivan',url:'https://www.tiktok.com/@ivanpaniagua52',agency:'SLOGAN SOCIAL',status:'Signed',ppv:200,pp4:800,videosLeft:null,drive:'',concepts:['','','','']},
-  {id:'po7',name:'Johnny',url:'https://www.tiktok.com/@johnyonthestreet',agency:'BLITZ AGENCY',status:'Signed',ppv:500,pp4:2000,videosLeft:3,drive:'https://drive.google.com/drive/folders/1Iy1Ehg-HU9qKRHXU8uiwoYZ9mGPOCfVM',concepts:['Perfect Guy','','','']},
-  {id:'po8',name:'Whey Lee',url:'https://www.tiktok.com/@wheylee',agency:'BLITZ AGENCY',status:'Signed',ppv:300,pp4:1200,videosLeft:4,drive:'https://drive.google.com/drive/folders/18dcJQstIrDoOMG8Wpk_dTqigczApqxwf',concepts:['','','','']},
-  {id:'po9',name:'Wiggie Diego',url:'https://www.tiktok.com/@wiggiediego',agency:'BLITZ AGENCY',status:'Signed',ppv:400,pp4:1600,videosLeft:4,drive:'https://drive.google.com/drive/folders/1KgEjnTuws-65wVT3-Wp52dKZeJHcwMB7',concepts:['','','','']},
-  {id:'po10',name:'Ashley Keno',url:'https://www.tiktok.com/@ashleykeno17',agency:'BLITZ AGENCY',status:'Signed',ppv:500,pp4:2000,videosLeft:4,drive:'https://drive.google.com/drive/folders/1FHg_uO-oyz606gVhIdRjfH6cbpgQ_GIJ',concepts:['','','','']},
-  {id:'po11',name:'Davidxclark',url:'https://www.tiktok.com/@davidxclark',agency:'BLITZ AGENCY',status:'Signed',ppv:200,pp4:800,videosLeft:4,drive:'https://drive.google.com/drive/folders/1CbZ-XDxRg5EYZK70jb4UTLkY5veVwAd3',concepts:['','','','']},
-  {id:'po12',name:'AlexDaChallenger',url:'https://www.tiktok.com/@AlexDachallenger',agency:'BLITZ AGENCY',status:'Signed',ppv:100,pp4:400,videosLeft:1,drive:'https://drive.google.com/drive/folders/1z-Y46opcsU_UoU_IsKrnpk5LT4_p4WX7',concepts:['','','','']},
-  {id:'po13',name:'Big YuYu',url:'https://www.tiktok.com/@BigYuyu17',agency:'BLITZ AGENCY',status:'Signed',ppv:500,pp4:2000,videosLeft:4,drive:'https://drive.google.com/drive/folders/1WiBzHNQ8Y8q94X7lfz7o_9GUsNBhXaEv',concepts:['','','','']}
+  {id:'po1',name:'Aarham',url:'https://www.tiktok.com/@aarham.dent',agency:'Direct',status:'Signed',ppv:null,pp4:500,drive:'https://drive.google.com/drive/folders/12ptamzMo_rXihouv12aYkTUTE67LTr-l',paidBy:'INF Machine',items:[{concept:'Food Challenge',link:'',received:true},{concept:'Mom Paper',link:'',received:true},{concept:'Millennial Boss',link:'',received:true},{concept:'X Paper.io2',link:'',received:true}]},
+  {id:'po2',name:'Cooper',url:'https://www.tiktok.com/@therealcoopjt',agency:'Direct',status:'Signed',ppv:150,pp4:600,drive:'https://drive.google.com/drive/folders/1-_r7Uy-qREWeylc1UVf8MxzcWyIgoAgE',paidBy:'INF Machine',items:[{concept:'Task Game',link:'',received:true},{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false}]},
+  {id:'po3',name:'Calvin',url:'https://www.tiktok.com/@.queasycal',agency:'Direct',status:'Signed',ppv:125,pp4:500,drive:'https://drive.google.com/drive/folders/12c68h3J_maXfO9jtzqqwayP19SyPb3YD',paidBy:'INF Machine',items:[{concept:'Basketball Challenge',link:'',received:true},{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false}]},
+  {id:'po4',name:'Liam',url:'https://www.tiktok.com/@liamgimig',agency:'SLOGAN SOCIAL',status:'Signed',ppv:250,pp4:2000,drive:'https://drive.google.com/drive/folders/1gnuvnadTeaw3u3IeqScy3dTWy_bCLxcc',paidBy:'INF Machine',items:[{concept:'Running Challenge',link:'',received:false},{concept:'Spicy Food Challenge',link:'',received:false},{concept:'Ingredients Challenge',link:'',received:false},{concept:'Zoom Paper',link:'',received:false}]},
+  {id:'po5',name:'Raynaldo',url:'https://www.tiktok.com/@thatboiinaldo',agency:'SLOGAN SOCIAL',status:'Signed',ppv:250,pp4:1000,drive:'https://drive.google.com/drive/folders/1rkJStxywwano28AHfCL3JWwDY12Og3ka',paidBy:'INF Machine',items:[{concept:'Broke Up Paper',link:'',received:true},{concept:'Excited Paper',link:'',received:true},{concept:'Taking a Pic Gf',link:'',received:true},{concept:'Kidnapped Paper',link:'',received:true}]},
+  {id:'po6',name:'Ivan',url:'https://www.tiktok.com/@ivanpaniagua52',agency:'SLOGAN SOCIAL',status:'Signed',ppv:200,pp4:800,drive:'',paidBy:'INF Machine',items:[{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false}]},
+  {id:'po7',name:'Johnny',url:'https://www.tiktok.com/@johnyonthestreet',agency:'BLITZ AGENCY',status:'Signed',ppv:500,pp4:2000,drive:'https://drive.google.com/drive/folders/1Iy1Ehg-HU9qKRHXU8uiwoYZ9mGPOCfVM',paidBy:'PO2 Team',items:[{concept:'Perfect Guy',link:'',received:true},{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false}]},
+  {id:'po8',name:'Whey Lee',url:'https://www.tiktok.com/@wheylee',agency:'BLITZ AGENCY',status:'Signed',ppv:300,pp4:1200,drive:'https://drive.google.com/drive/folders/18dcJQstIrDoOMG8Wpk_dTqigczApqxwf',paidBy:'PO2 Team',items:[{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false}]},
+  {id:'po9',name:'Wiggie Diego',url:'https://www.tiktok.com/@wiggiediego',agency:'BLITZ AGENCY',status:'Signed',ppv:400,pp4:1600,drive:'https://drive.google.com/drive/folders/1KgEjnTuws-65wVT3-Wp52dKZeJHcwMB7',paidBy:'PO2 Team',items:[{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false}]},
+  {id:'po10',name:'Ashley Keno',url:'https://www.tiktok.com/@ashleykeno17',agency:'BLITZ AGENCY',status:'Signed',ppv:500,pp4:2000,drive:'https://drive.google.com/drive/folders/1FHg_uO-oyz606gVhIdRjfH6cbpgQ_GIJ',paidBy:'PO2 Team',items:[{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false}]},
+  {id:'po11',name:'Davidxclark',url:'https://www.tiktok.com/@davidxclark',agency:'BLITZ AGENCY',status:'Signed',ppv:200,pp4:800,drive:'https://drive.google.com/drive/folders/1CbZ-XDxRg5EYZK70jb4UTLkY5veVwAd3',paidBy:'PO2 Team',items:[{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false}]},
+  {id:'po12',name:'AlexDaChallenger',url:'https://www.tiktok.com/@AlexDachallenger',agency:'BLITZ AGENCY',status:'Signed',ppv:100,pp4:400,drive:'https://drive.google.com/drive/folders/1z-Y46opcsU_UoU_IsKrnpk5LT4_p4WX7',paidBy:'PO2 Team',items:[{concept:'',link:'',received:true},{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false}]},
+  {id:'po13',name:'Big YuYu',url:'https://www.tiktok.com/@BigYuyu17',agency:'BLITZ AGENCY',status:'Signed',ppv:500,pp4:2000,drive:'https://drive.google.com/drive/folders/1WiBzHNQ8Y8q94X7lfz7o_9GUsNBhXaEv',paidBy:'PO2 Team',items:[{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false}]}
 ];
 var UPO2={};
+var _po2Exp={};
 function loadPO2(){try{UPO2=JSON.parse(localStorage.getItem(PO2_SK)||'{}')}catch(e){UPO2={};}}
 function savePO2(){localStorage.setItem(PO2_SK,JSON.stringify(UPO2));}
 function getPO2(){
   var del=UPO2._del||[]; var add=UPO2._add||[];
   return BASE_PO2.filter(function(r){return del.indexOf(r.id)<0;})
-    .map(function(r){return Object.assign({},r,UPO2[r.id]||{});})
-    .concat(add);
+    .map(function(r){
+      var o=Object.assign({},r,UPO2[r.id]||{});
+      if(UPO2[r.id]&&UPO2[r.id].items){
+        o.items=r.items.map(function(it,i){return Object.assign({},it,(UPO2[r.id].items||[])[i]||{});});
+      }
+      return o;
+    }).concat(add);
 }
+function po2RecvCount(r){return (r.items||[]).filter(function(x){return x.received;}).length;}
+function isDonePO2(r){return (r.items||[]).length===4&&po2RecvCount(r)===4;}
 var PO2_STATUS=['Signed','Negotiating','Call booked','Replied','Declined','Ghosted'];
-var PO2_SCLS={Signed:'b-green',Negotiating:'b-amber','Call booked':'b-blue',Replied:'b-amber',Declined:'b-red',Ghosted:'b-gray'};
 
 function renderPO2(){
   var q=(document.getElementById('po2-q').value||'').toLowerCase();
   var sf=document.getElementById('po2-status').value;
   var af=document.getElementById('po2-agency').value;
-  var rows=getPO2().filter(function(r){
+  var all=getPO2().filter(function(r){
     if(q&&r.name.toLowerCase().indexOf(q)<0) return false;
     if(sf&&r.status!==sf) return false;
-    if(af){
-      var ag=r.agency||'Direct';
-      if(af==='Direct'&&ag&&ag!=='Direct'&&ag!=='') return false;
-      if(af!=='Direct'&&ag!==af) return false;
-    }
+    if(af){var ag=r.agency||'Direct';if(af==='Direct'&&ag&&ag!=='Direct'&&ag!=='') return false;if(af!=='Direct'&&ag!==af) return false;}
     return true;
   });
-  var signed=rows.filter(function(r){return r.status==='Signed';});
-  var totalVL=signed.reduce(function(a,r){return a+(r.videosLeft||0);},0);
-  var totalBudget=signed.reduce(function(a,r){return a+(r.pp4||0);},0);
+  var signed=all.filter(function(r){return r.status==='Signed';});
+  var totalB=signed.reduce(function(a,r){return a+(r.pp4||0);},0);
+  var infB=signed.filter(function(r){return r.paidBy==='INF Machine';}).reduce(function(a,r){return a+(r.pp4||0);},0);
+  var po2B=signed.filter(function(r){return r.paidBy==='PO2 Team';}).reduce(function(a,r){return a+(r.pp4||0);},0);
+  var done=all.filter(isDonePO2);
   document.getElementById('po2-stats').innerHTML=
-    '<div class="sc"><div class="sc-l">Créateurs</div><div class="sc-v">'+rows.length+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Créateurs</div><div class="sc-v">'+all.length+'</div></div>'+
     '<div class="sc"><div class="sc-l">Signés</div><div class="sc-v" style="color:#085041">'+signed.length+'</div></div>'+
-    '<div class="sc"><div class="sc-l">Vidéos restantes</div><div class="sc-v" style="color:#633806">'+totalVL+'</div></div>'+
-    '<div class="sc"><div class="sc-l">Budget total</div><div class="sc-v" style="color:#633806">$'+fmt(totalBudget)+'</div></div>';
+    '<div class="sc"><div class="sc-l">Terminées</div><div class="sc-v" style="color:#085041">'+done.length+'</div></div>'+
+    '<div class="sc amber"><div class="sc-l">Budget total</div><div class="sc-v">$'+fmt(totalB)+'</div></div>'+
+    '<div class="sc"><div class="sc-l">INF Machine</div><div class="sc-v" style="color:#185fa5">$'+fmt(infB)+'</div></div>'+
+    '<div class="sc"><div class="sc-l">PO2 Team</div><div class="sc-v" style="color:#633806">$'+fmt(po2B)+'</div></div>';
 
-  document.getElementById('po2-body').innerHTML=rows.map(function(r){
-    var sOpts=PO2_STATUS.map(function(s){return '<option value="'+s+'"'+(s===r.status?' selected':'')+'>'+s+'</option>';}).join('');
-    var concepts=(r.concepts||[]).filter(function(c){return c;}).join(', ');
-    var drv=r.drive?'<a href="'+esc(r.drive)+'" target="_blank" style="font-size:10px">Drive ↗</a>':
-      '<input class="inp" placeholder="Drive URL" style="width:90px" value="" oninput="editPO2(\''+r.id+'\',\'drive\',this.value)">';
-    return '<tr>'+
+  var active=all.filter(function(r){return !isDonePO2(r);});
+  var doneRows=all.filter(isDonePO2);
+  document.getElementById('po2-active').innerHTML=buildPO2Table(active);
+  document.getElementById('po2-done').innerHTML=buildPO2Table(doneRows);
+  document.getElementById('po2-done-count').textContent=doneRows.length;
+  document.getElementById('po2-done-wrap').style.display=doneRows.length?'block':'none';
+  bindPO2Events();
+}
+
+function buildPO2Table(rows){
+  if(!rows.length) return '<div class="tw"><table><tbody><tr class="empty"><td colspan="9">Aucune ligne</td></tr></tbody></table></div>';
+  var sOpts=PO2_STATUS.map(function(s){return '<option>'+s+'</option>';}).join('');
+  var html='<div class="tw"><table><thead><tr>'+
+    '<th style="width:22px"></th><th>Créateur</th><th>Agence</th><th>Statut</th>'+
+    '<th>$/vidéo</th><th>$/pack</th><th>Reçu</th><th>Drive</th>'+
+    '<th>Payé par</th><th></th></tr></thead><tbody>';
+  rows.forEach(function(r){
+    var rc=po2RecvCount(r);
+    var done=isDonePO2(r);
+    var recCell=done?'<span class="recv-tick">✓</span>':'<span class="recv-count">'+rc+'/4</span>';
+    var sSelOpts=PO2_STATUS.map(function(s){return '<option'+(s===r.status?' selected':'')+'>'+s+'</option>';}).join('');
+    var pbOpts=['INF Machine','PO2 Team'].map(function(p){return '<option'+(p===r.paidBy?' selected':'')+'>'+p+'</option>';}).join('');
+    var drv=r.drive?'<a href="'+esc(r.drive)+'" target="_blank" style="font-size:10px">↗</a> ':
+      '<input class="inp" placeholder="Drive…" style="width:75px" value="" oninput="editPO2(\''+r.id+'\',\'drive\',this.value)">';
+    var expOpen=_po2Exp[r.id];
+    html+='<tr class="main-row'+(expOpen?' expanded':'')+'" data-po2="'+r.id+'">'+
+      '<td><button class="expander'+(expOpen?' open':'')+'" data-po2="'+r.id+'">▶</button></td>'+
       '<td style="font-weight:500"><a href="'+esc(r.url)+'" target="_blank">'+esc(r.name)+'</a></td>'+
-      '<td style="color:#888;font-size:10px">'+esc(r.url.replace('https://www.tiktok.com/',''))+'</td>'+
       '<td><span class="badge b-gray" style="font-size:10px">'+esc(r.agency||'Direct')+'</span></td>'+
-      '<td><select class="sel" onchange="editPO2(\''+r.id+'\',\'status\',this.value)">'+sOpts+'</select></td>'+
+      '<td><select class="sel" onchange="editPO2(\''+r.id+'\',\'status\',this.value)">'+sSelOpts+'</select></td>'+
       '<td>'+(r.ppv?'$'+r.ppv:'—')+'</td>'+
-      '<td>'+(r.pp4?'$'+r.pp4:'—')+'</td>'+
-      '<td style="font-weight:600;text-align:center">'+(r.videosLeft!=null?r.videosLeft:'—')+'</td>'+
-      '<td style="font-size:10px;color:#888;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(concepts)+'">'+esc(concepts||'—')+'</td>'+
+      '<td style="font-weight:500">'+(r.pp4?'$'+r.pp4:'—')+'</td>'+
+      '<td style="text-align:center">'+recCell+'</td>'+
       '<td>'+drv+'</td>'+
+      '<td><select class="sel" style="width:100px" onchange="editPO2(\''+r.id+'\',\'paidBy\',this.value)">'+pbOpts+'</select></td>'+
       '<td><button class="del" onclick="delPO2(\''+r.id+'\')">×</button></td>'+
       '</tr>';
-  }).join('')||'<tr class="empty"><td colspan="10">Aucun résultat</td></tr>';
+    if(expOpen){
+      html+='<tr><td colspan="10" style="padding:0;border-bottom:1px solid #e0dfd8">'+
+        '<table style="width:100%;border-collapse:collapse;background:#fafaf4">'+
+        '<thead><tr><th style="padding:5px 10px;width:40px">#</th>'+
+        '<th style="padding:5px 10px">Concept</th>'+
+        '<th style="padding:5px 10px">Lien vidéo</th>'+
+        '<th style="padding:5px 10px;width:60px;text-align:center">Reçu</th></tr></thead><tbody>';
+      (r.items||[]).forEach(function(it,i){
+        html+='<tr class="sub-table-row'+(i===3?' sub-last':'')+'">'+
+          '<td style="color:#888;font-weight:600;font-size:11px">Vidéo '+(i+1)+'</td>'+
+          '<td><input class="inp" placeholder="Concept…" value="'+esc(it.concept||'')+'"'+
+            ' oninput="editPO2Item(\''+r.id+'\','+i+',\'concept\',this.value)" style="width:160px"></td>'+
+          '<td>'+(it.link?'<a href="'+esc(it.link)+'" target="_blank" style="font-size:10px;margin-right:4px">↗</a>':'')+
+            '<input class="inp" placeholder="Lien vidéo…" value="'+esc(it.link||'')+'"'+
+            ' oninput="editPO2Item(\''+r.id+'\','+i+',\'link\',this.value)" style="width:200px"></td>'+
+          '<td style="text-align:center"><input type="checkbox" class="chk"'+(it.received?' checked':'')+
+            ' onchange="editPO2Item(\''+r.id+'\','+i+',\'received\',this.checked)"></td>'+
+          '</tr>';
+      });
+      html+='</tbody></table></td></tr>';
+    }
+  });
+  html+='</tbody></table></div>';
+  return html;
+}
+
+function bindPO2Events(){
+  document.querySelectorAll('.expander[data-po2]').forEach(function(btn){
+    btn.onclick=function(e){
+      e.stopPropagation();
+      var id=this.getAttribute('data-po2');
+      _po2Exp[id]=!_po2Exp[id];
+      renderPO2();
+    };
+  });
 }
 
 function editPO2(id,field,val){
@@ -1111,7 +1167,19 @@ function editPO2(id,field,val){
   var a=(UPO2._add||[]).find(function(r){return r.id===id;});
   if(a) a[field]=val;
   savePO2();
+  if(field==='status'||field==='paidBy') renderPO2();
 }
+function editPO2Item(id,idx,field,val){
+  if(!UPO2[id]) UPO2[id]={};
+  var base=BASE_PO2.find(function(r){return r.id===id;});
+  var items=(UPO2[id].items)||(base?base.items.map(function(x){return Object.assign({},x);}):makePO2Items());
+  items[idx][field]=val;
+  UPO2[id].items=items;
+  if(base){base.items[idx]=base.items[idx]||{};base.items[idx][field]=val;}
+  savePO2();
+  renderPO2();
+}
+function makePO2Items(){return [{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false},{concept:'',link:'',received:false}];}
 function delPO2(id){
   if(!confirm('Supprimer ?')) return;
   if(!UPO2._del) UPO2._del=[];
@@ -1121,7 +1189,7 @@ function delPO2(id){
 }
 function addPO2Row(){
   var id='pou'+Date.now();
-  var r={id:id,name:'Nouveau',url:'',agency:'Direct',status:'Negotiating',ppv:null,pp4:null,videosLeft:null,drive:'',concepts:['','','','']};
+  var r={id:id,name:'Nouveau créateur',url:'',agency:'Direct',status:'Negotiating',ppv:null,pp4:null,drive:'',paidBy:'INF Machine',items:makePO2Items()};
   if(!UPO2._add) UPO2._add=[];
   UPO2._add.push(r);
   savePO2(); renderPO2(); toast('Ligne ajoutée');
