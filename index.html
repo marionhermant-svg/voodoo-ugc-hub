@@ -131,6 +131,7 @@ a:hover{text-decoration:underline}
   <div class="tab" onclick="switchTab('budget',this)">💰 Budget</div>
   <div class="tab" onclick="switchTab('recap',this)">📊 Recap mensuel</div>
   <div class="tab" onclick="switchTab('po2',this)">🎮 PO2 Organique</div>
+  <div class="tab" onclick="switchTab('weekly',this)">📈 Weekly Report</div>
   <div class="tab" onclick="switchTab('legend',this)">📖 Légende</div>
 </div>
 
@@ -199,6 +200,18 @@ a:hover{text-decoration:underline}
     <div class="sec">✅ Collabs terminées <span class="sec-count" id="po2-done-count">0</span></div>
     <div id="po2-done"></div>
   </div>
+</div>
+
+<!-- WEEKLY REPORT -->
+<div class="panel" id="tab-weekly">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <div>
+      <div style="font-size:14px;font-weight:600">Weekly Performance Report</div>
+      <div style="font-size:11px;color:#888">Mis à jour chaque mardi soir via Voodoo Data Whisper</div>
+    </div>
+    <button class="btn btn-dark" id="wr-btn" onclick="refreshWeeklyReport()" style="font-size:11px">🔄 Actualiser</button>
+  </div>
+  <div id="wr-body"></div>
 </div>
 
 <!-- LEGEND -->
@@ -287,7 +300,7 @@ var BASE_CREATORS=[
   {id:'j11',handle:'nextwaveugc',url:'https://tiktok.com/@nextwaveugc',followers:'810',games:['MC','SAL','MBS'],ppv:180,cls:'in-negotiation',isLT:false,email:'chadbartlettcreates@gmail.com',contactedAt:NOW-4*DAY,lastSentAt:NOW,driveUrl:'',note:'Chad. Contre-offre $180/v ($540 pack 3). Liens drives + co-création envoyés.'},
   {id:'j12',handle:'chrismugc',url:'https://tiktok.com/@chrismugc',followers:'1.2K',games:['MC','SAL','MBS'],ppv:200,cls:'in-negotiation',isLT:false,email:'chrismccarthyugc@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $600'},
   {id:'j13',handle:'brycebrandyugc',url:'https://tiktok.com/@brycebrandyugc',followers:'1.3K',games:['MC'],ppv:200,cls:'in-negotiation',isLT:false,email:'hello@brycebrandyugc.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $600'},
-  {id:'j14',handle:'ksocialugc',url:'https://tiktok.com/@ksocialugc',followers:'1.4K',games:['MBS','SAL'],ppv:167,cls:'in-negotiation',isLT:false,email:'ksocialugc@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $500'},
+  {id:'j14',handle:'ksocialugc',url:'https://tiktok.com/@ksocialugc',followers:'1.4K',games:['MBS','SAL'],ppv:167,cls:'active',isLT:false,email:'ksocialugc@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'ACCEPTÉ ✓ $500 pack 3. Split : 2 Marble Sort, 1 Sand Loop. Contrat à envoyer demain.'},
   {id:'j15',handle:'masonpatrickmedia',url:'https://tiktok.com/@masonpatrickmedia',followers:'3.7K',games:['CCA'],ppv:200,cls:'in-negotiation',isLT:false,email:'MasonPatrickUGC@yahoo.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $600'},
   {id:'j16',handle:'smcconnellugc',url:'https://tiktok.com/@smcconnellugc',followers:'515',games:['MC','SAL','MBS'],ppv:150,cls:'in-negotiation',isLT:false,email:'mcconnells1987@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $450'},
   {id:'j17',handle:'ugcbylouis',url:'https://tiktok.com/@ugcbylouis',followers:'1.3K',games:['CCA'],ppv:150,cls:'in-negotiation',isLT:false,email:'louishugc@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $450'},
@@ -295,7 +308,7 @@ var BASE_CREATORS=[
   {id:'j19',handle:'raycordovaugc',url:'https://tiktok.com/@raycordovaugc',followers:'2.5K',games:['MC','SAL','MBS'],ppv:250,cls:'in-negotiation',isLT:false,email:'contentbycordovarc@gmail.com',contactedAt:NOW-2*DAY,driveUrl:'',note:'dernier effort $250/v'},
   {id:'j20',handle:'joshiugc-dup',url:'',followers:'',games:['CCA'],ppv:0,cls:'out',isLT:false,email:'',contactedAt:null,driveUrl:'',note:'doublon supprimé — voir j30'},
   {id:'j21',handle:'getyouastek',url:'https://tiktok.com/@getyouastek',followers:'4K',games:['CCA'],ppv:150,cls:'in-negotiation',isLT:false,email:'ugcwithstek@gmail.com',contactedAt:NOW-2*DAY,driveUrl:'',note:'offre $450'},
-  {id:'j22',handle:'ugcbyteej',url:'https://tiktok.com/@ugcbyteej',followers:'379',games:['MC','SAL','MBS'],ppv:150,cls:'contacted',isLT:false,email:'hello@ugcbyteej.com',contactedAt:NOW-1*DAY,driveUrl:'',note:''},
+  {id:'j22',handle:'ugcbyteej',url:'https://tiktok.com/@ugcbyteej',followers:'379',games:['MC','SAL','MBS'],ppv:150,cls:'out',isLT:false,email:'hello@ugcbyteej.com',contactedAt:NOW-1*DAY,driveUrl:'',note:'Budget pas aligné. Stay in touch envoyé.'},
   {id:'j23',handle:'autumntriesugc',url:'https://tiktok.com/@autumntriesugc',followers:'—',games:['CCA','MBS'],ppv:150,cls:'in-negotiation',isLT:false,email:'autumntriesugc@gmail.com',contactedAt:NOW-2*DAY,driveUrl:'',note:'offre $150/v'},
   {id:'j24',handle:'chefreactions',url:'https://tiktok.com/@chefreactions',followers:'3.7M',games:['CCA'],ppv:0,cls:'out',isLT:false,email:'regan@coastlinecreatives.com',contactedAt:NOW-5*DAY,driveUrl:'',note:'pas un fit'},
   {id:'j25',handle:'ugc.eliah',url:'https://tiktok.com/@ugc.eliah',followers:'1.8K',games:['CCA'],ppv:0,cls:'out',isLT:false,email:'Eliah@createwithvsn.com',contactedAt:NOW-5*DAY,driveUrl:'',note:'partenariat exclusif'},
@@ -985,6 +998,7 @@ function switchTab(name,el){
   else if(name==='budget') renderBudget();
   else if(name==='recap') renderRecap();
   else if(name==='po2') renderPO2();
+  else if(name==='weekly') renderWeeklyReport();
   else if(name==='creators') renderCreators();
 }
 
@@ -1263,12 +1277,226 @@ async function loadINFPerformance(infCodes,month){
   if(btn){btn.textContent='📊 Charger performances';btn.disabled=false;}
 }
 
+// ===================== WEEKLY REPORT =====================
+var WR_SK='vg-weekly-v1';
+var WR_SESSION=null;
+
+// Embedded data from last DataWhisper query (auto-refreshed on demand)
+var WR_DATA=[
+  {
+    week:'Week ending May 31, 2026',
+    totalSpend:24115,
+    activeCreators:33,
+    videosUploaded:{SAL:1,MBS:36,PO2:1,MC:0,CCA:9,Rush:0,Blitz:0},
+    spendByGame:{SAL:19428,MBS:3110,PO2:1573,MC:3,CCA:0,Rush:0,Blitz:0},
+    spendByNetwork:{Meta:15682,Google:6171,Other:1500,TikTok:762},
+    coAuthors:[
+      {name:'sav',videos:6},{name:'khalil aigc',videos:5},{name:'don ngyuen',videos:3},
+      {name:'austin aigc',videos:2},{name:'perry aigc',videos:1},{name:'marcus aigc',videos:1},
+      {name:'micheline aigc',videos:1},{name:'mickey aigc',videos:1},{name:'odette aigc',videos:1},
+      {name:'raymond aigc',videos:1},{name:'quinn aigc',videos:1},{name:'malik aigc',videos:1},
+      {name:'renee aigc',videos:1},{name:'roger aigc',videos:1},{name:'sam aigc',videos:1},
+      {name:'simone aigc',videos:1},{name:'marcel aigc',videos:1},{name:'lucas aigc',videos:1},
+      {name:'lucien aigc',videos:1},{name:'bernard aigc',videos:1},{name:'josette aigc',videos:1},
+      {name:'jaden aigc',videos:1},{name:'isaac aigc',videos:1},{name:'huguette aigc',videos:1},
+      {name:'hae aigc',videos:1},{name:'guithilia aigc',videos:1},{name:'gerard aigc',videos:1},
+      {name:'gaston aigc',videos:1},{name:'georgie aigc',videos:1},{name:'fred aigc',videos:1},
+      {name:'fernand aigc',videos:1},{name:'brew aigc',videos:1},{name:'tarik aigc',videos:1}
+    ],
+    topSteady:[
+      {inf:'INF8541',game:'SAL',allTime:536600,weekSpend:9700,vgp:'https://vgp-assets.voodoo.io/business/d86b69e8-a692-4354-9b25-7f23c64dc61e/assets/df8eaa63-7985-44eb-9257-3f2ac8f8f3f4/variants/5ff1dd71-f92c-4043-a05a-f93049e87f57/Blitz%20Win%20Cash%203%20(POV%20Text).mp4'},
+      {inf:'INF8868',game:'SAL',allTime:57700,weekSpend:6100,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/37edc710-879e-435f-ab6f-cc8e48008693/variants/bbad489d-366b-430b-aab1-f91c03322023/Sand%20Loop%201.mp4'},
+      {inf:'INF8941',game:'SAL',allTime:15100,weekSpend:352,vgp:''},
+      {inf:'INF8077',game:'SAL',allTime:14100,weekSpend:50,vgp:''},
+      {inf:'INF8941',game:'MBS',allTime:13000,weekSpend:833,vgp:''}
+    ],
+    topRising:[
+      {inf:'INF9352',game:'MBS',allTime:3700,weekSpend:3700,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/d74a3112-b7b1-4710-86e0-229117c99bda/variants/702f6482-0401-403f-95ac-19128017e736/INF9352-1.mov'},
+      {inf:'INF9420',game:'MBS',allTime:1200,weekSpend:1200,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/230961bd-05c6-41cf-9445-9bfc4aaf8023/variants/8e6e1bdb-b1f4-4e64-a207-4f6c0d473f5e/INF9420.mp4'},
+      {inf:'INF9353',game:'MBS',allTime:602,weekSpend:602,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/e3f96cce-7c3e-482f-b6b7-5f64cb2a9f1f/variants/23c22d63-7ac3-43ac-8aba-125892b8093c/INF9353-1.mov'},
+      {inf:'INF10096',game:'MBS',allTime:84,weekSpend:84,vgp:''},
+      {inf:'INF10008',game:'MBS',allTime:66,weekSpend:66,vgp:''}
+    ]
+  },
+  {
+    week:'Week ending June 7, 2026 ⚠️ partielle (4 jours)',
+    totalSpend:7045,
+    activeCreators:2,
+    videosUploaded:{SAL:0,MBS:18,PO2:0,MC:0,CCA:2,Rush:0,Blitz:0},
+    spendByGame:{SAL:5385,MBS:952,PO2:706,MC:2,CCA:0,Rush:0,Blitz:0},
+    spendByNetwork:{Meta:3650,Google:2264,Other:706,TikTok:424},
+    coAuthors:[
+      {name:'ngage',videos:18},{name:'don ngyuen',videos:2}
+    ],
+    topSteady:[
+      {inf:'INF8541',game:'SAL',allTime:536600,weekSpend:3100,vgp:'https://vgp-assets.voodoo.io/business/d86b69e8-a692-4354-9b25-7f23c64dc61e/assets/df8eaa63-7985-44eb-9257-3f2ac8f8f3f4/variants/5ff1dd71-f92c-4043-a05a-f93049e87f57/Blitz%20Win%20Cash%203%20(POV%20Text).mp4'},
+      {inf:'INF8868',game:'SAL',allTime:57700,weekSpend:725,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/37edc710-879e-435f-ab6f-cc8e48008693/variants/bbad489d-366b-430b-aab1-f91c03322023/Sand%20Loop%201.mp4'},
+      {inf:'INF8941',game:'MBS',allTime:13000,weekSpend:112,vgp:''},
+      {inf:'INF8941',game:'SAL',allTime:15100,weekSpend:19,vgp:''},
+      {inf:'INF8077',game:'SAL',allTime:14100,weekSpend:11,vgp:''}
+    ],
+    topRising:[
+      {inf:'INF9352',game:'MBS',allTime:3700,weekSpend:800,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/d74a3112-b7b1-4710-86e0-229117c99bda/variants/702f6482-0401-403f-95ac-19128017e736/INF9352-1.mov'},
+      {inf:'INF9420',game:'MBS',allTime:1200,weekSpend:300,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/230961bd-05c6-41cf-9445-9bfc4aaf8023/variants/8e6e1bdb-b1f4-4e64-a207-4f6c0d473f5e/INF9420.mp4'},
+      {inf:'INF9353',game:'MBS',allTime:602,weekSpend:150,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/e3f96cce-7c3e-482f-b6b7-5f64cb2a9f1f/variants/23c22d63-7ac3-43ac-8aba-125892b8093c/INF9353-1.mov'},
+      {inf:'INF10008',game:'MBS',allTime:66,weekSpend:66,vgp:''},
+      {inf:'INF10096',game:'MBS',allTime:84,weekSpend:84,vgp:''}
+    ]
+  }
+];
+
+var GAME_COLORS={SAL:'#f59e0b',MBS:'#10b981',PO2:'#6b7280',MC:'#f97316',CCA:'#3b82f6',Rush:'#ef4444',Blitz:'#8b5cf6'};
+var NET_COLORS={Meta:'#1877f2',Google:'#ea4335',TikTok:'#000000',Other:'#9ca3af'};
+var GAME_NAMES={SAL:'Sand Loop',MBS:'Marble Sort',PO2:'Paper.io 2',MC:'Mob Control',CCA:'Castle Busters',Rush:'Rush Arena',Blitz:'Blitz'};
+
+function renderWeeklyReport(){
+  if(!WR_DATA||!WR_DATA.length){document.getElementById('wr-body').innerHTML='<p style="color:#aaa;padding:20px">Aucune donnée. Clique sur Actualiser.</p>';return;}
+  var html='';
+  WR_DATA.forEach(function(w,wi){
+    var gameKeys=Object.keys(w.spendByGame).filter(function(g){return w.spendByGame[g]>0;});
+    var netKeys=Object.keys(w.spendByNetwork).filter(function(n){return w.spendByNetwork[n]>0;});
+    html+='<div style="background:#fff;border:1px solid #e0dfd8;border-radius:10px;padding:18px;margin-bottom:20px">';
+    // Header
+    html+='<div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #f0efe8;padding-bottom:10px;margin-bottom:14px">';
+    html+='<div style="font-size:14px;font-weight:700">'+w.week+'</div>';
+    html+='<div style="font-size:18px;font-weight:700;color:#633806">$'+fmt(w.totalSpend)+'</div></div>';
+    // Stats row
+    html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">';
+    html+='<div class="sc"><div class="sc-l">Spend total</div><div class="sc-v" style="color:#633806">$'+fmt(w.totalSpend)+'</div></div>';
+    html+='<div class="sc"><div class="sc-l">Créateurs actifs</div><div class="sc-v">'+w.activeCreators+'</div></div>';
+    var totalVids=Object.values(w.videosUploaded).reduce(function(a,b){return a+b;},0);
+    html+='<div class="sc"><div class="sc-l">Vidéos uploadées</div><div class="sc-v">'+totalVids+'</div></div>';
+    var topGame=Object.keys(w.spendByGame).sort(function(a,b){return w.spendByGame[b]-w.spendByGame[a];})[0];
+    html+='<div class="sc"><div class="sc-l">Top jeu</div><div class="sc-v" style="font-size:14px">'+(GAME_NAMES[topGame]||topGame)+'</div></div>';
+    html+='</div>';
+    // Uploads split by game
+    var uploadKeys=Object.keys(w.videosUploaded).filter(function(g){return w.videosUploaded[g]>0;});
+    if(uploadKeys.length){
+      html+='<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Vidéos uploadées par jeu</div>';
+      html+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
+      uploadKeys.forEach(function(g){html+='<span style="background:'+GAME_COLORS[g]+'22;border:1px solid '+GAME_COLORS[g]+'44;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;color:'+GAME_COLORS[g]+'">'+
+        (GAME_NAMES[g]||g)+' <strong>'+w.videosUploaded[g]+'</strong></span>';});
+      html+='</div></div>';
+    }
+    // Co-authors
+    if(w.coAuthors&&w.coAuthors.length){
+      html+='<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Créateurs actifs — co-auteurs ('+w.activeCreators+')</div>';
+      html+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
+      w.coAuthors.forEach(function(c){
+        html+='<span style="background:#f8f7f4;border:1px solid #e0dfd8;border-radius:5px;padding:2px 8px;font-size:11px">'+esc(c.name)+(c.videos>1?' <strong>×'+c.videos+'</strong>':'')+'</span>';
+      });
+      html+='</div></div>';
+    }
+    // Charts row
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
+    // Spend by game
+    html+='<div><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Spend par jeu</div>';
+    html+='<div style="position:relative;height:180px"><canvas id="wr-game-'+wi+'" role="img" aria-label="Spend par jeu semaine '+wi+'"></canvas></div>';
+    html+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">';
+    gameKeys.forEach(function(g){html+='<span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:'+GAME_COLORS[g]+'"></span>'+(GAME_NAMES[g]||g)+' $'+fmt(w.spendByGame[g])+'</span>';});
+    html+='</div></div>';
+    // Spend by network
+    html+='<div><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Spend par réseau</div>';
+    html+='<div style="position:relative;height:180px"><canvas id="wr-net-'+wi+'" role="img" aria-label="Spend par réseau semaine '+wi+'"></canvas></div>';
+    html+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">';
+    netKeys.forEach(function(n){
+      var pct=Math.round(w.spendByNetwork[n]/w.totalSpend*100);
+      html+='<span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:'+NET_COLORS[n]+'"></span>'+n+' '+pct+'%</span>';
+    });
+    html+='</div></div>';
+    html+='</div>';
+    // Tables: steady + rising
+    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">';
+    // Top steady
+    html+='<div><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">⭐ Top spend — anciens & solides</div>';
+    html+='<div class="tw"><table><thead><tr><th>INF Code</th><th>Jeu</th><th>All-time</th><th>Cette sem.</th></tr></thead><tbody>';
+    w.topSteady.forEach(function(v){
+      var infCell=v.vgp?'<a href="'+esc(v.vgp)+'" target="_blank" style="font-family:monospace;font-weight:600;color:#185fa5;text-decoration:none" title="Voir sur VGP">'+v.inf+' ↗</a>':
+        '<span style="font-family:monospace;font-weight:600">'+v.inf+'</span>';
+      html+='<tr><td>'+infCell+'</td>';
+      html+='<td><span class="gtag g-'+v.game+'">'+v.game+'</span></td>';
+      html+='<td style="font-weight:600;color:#633806">$'+fmt(v.allTime)+'</td>';
+      html+='<td>$'+fmt(v.weekSpend)+'</td></tr>';
+    });
+    html+='</tbody></table></div></div>';
+    // Rising
+    html+='<div><div style="font-size:11px;font-weight:600;color:#085041;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">🚀 À garder à l\'oeil — vidéos montantes</div>';
+    html+='<div class="tw"><table><thead><tr><th>INF Code</th><th>Jeu</th><th>All-time</th><th>Cette sem.</th></tr></thead><tbody>';
+    w.topRising.forEach(function(v){
+      var infCell=v.vgp?'<a href="'+esc(v.vgp)+'" target="_blank" style="font-family:monospace;font-weight:600;color:#085041;text-decoration:none" title="Voir sur VGP">'+v.inf+' ↗</a>':
+        '<span style="font-family:monospace;font-weight:600;color:#085041">'+v.inf+'</span>';
+      html+='<tr><td>'+infCell+'</td>';
+      html+='<td><span class="gtag g-'+v.game+'">'+v.game+'</span></td>';
+      html+='<td>$'+fmt(v.allTime)+'</td>';
+      html+='<td style="font-weight:600;color:#085041">$'+fmt(v.weekSpend)+'</td></tr>';
+    });
+    html+='</tbody></table></div></div>';
+    html+='</div>';
+    html+='</div>';
+  });
+  document.getElementById('wr-body').innerHTML=html;
+  // Draw charts after DOM update
+  setTimeout(function(){
+    WR_DATA.forEach(function(w,wi){
+      var gameKeys=Object.keys(w.spendByGame).filter(function(g){return w.spendByGame[g]>0;});
+      var netKeys=Object.keys(w.spendByNetwork).filter(function(n){return w.spendByNetwork[n]>0;});
+      if(window.Chart){
+        new window.Chart(document.getElementById('wr-game-'+wi),{
+          type:'doughnut',
+          data:{labels:gameKeys.map(function(g){return GAME_NAMES[g]||g;}),
+                datasets:[{data:gameKeys.map(function(g){return w.spendByGame[g];}),
+                           backgroundColor:gameKeys.map(function(g){return GAME_COLORS[g]||'#999';}),
+                           borderWidth:2,borderColor:'#fff'}]},
+          options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.raw.toLocaleString('fr-FR');}}}}}
+        });
+        new window.Chart(document.getElementById('wr-net-'+wi),{
+          type:'doughnut',
+          data:{labels:netKeys,
+                datasets:[{data:netKeys.map(function(n){return w.spendByNetwork[n];}),
+                           backgroundColor:netKeys.map(function(n){return NET_COLORS[n]||'#999';}),
+                           borderWidth:2,borderColor:'#fff'}]},
+          options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.raw.toLocaleString('fr-FR')+' ('+Math.round(c.raw/w.totalSpend*100)+'%)';}}}}}
+        });
+      }
+    });
+  },100);
+}
+
+async function refreshWeeklyReport(){
+  var btn=document.getElementById('wr-btn');
+  btn.textContent='⏳ Chargement...';btn.disabled=true;
+  try{
+    var submitRes=await window.cowork.callMcpTool(
+      'mcp__0b27bde4-9c0f-4495-975e-d48bdc4a6e6c__submit-query-job___submit_query_job',
+      {prompt:'For the last 2 weeks, give me influencer UGC performance where author is marion.hermant@voodoo.io or creator names in naming (claymakesmoney,katxkelly,itssavagge,vietgramp,marygaming17,anxiety_doll,its_amandatimm,tonymuguio,pierrefll,famousque5). Provide: total spend per week, spend by game (SAL/MBS/PO2/MC/CCA/Rush/Blitz), spend by network (Meta,Google,TikTok,Other), videos uploaded per game, active creators count, top 5 steady high-spend INF codes with all-time and weekly spend, top 5 rising INF codes gaining spend. Return as structured data.',
+       scope:'gaming',session_id:WR_SESSION||undefined,user_email:'marion.hermant@voodoo.io'}
+    );
+    if(submitRes&&submitRes.session_id) WR_SESSION=submitRes.session_id;
+    var jobId=submitRes&&submitRes.job_id;
+    if(!jobId) throw new Error('No job ID');
+    var result=null;
+    for(var i=0;i<60;i++){
+      await new Promise(function(r){setTimeout(r,5000);});
+      var s=await window.cowork.callMcpTool('mcp__0b27bde4-9c0f-4495-975e-d48bdc4a6e6c__get-job-status___get_job_status',{job_id:jobId});
+      if(s&&(s.state==='succeeded'||s.state==='COMPLETED')){result=s.result;break;}
+      if(s&&(s.state==='failed'||s.state==='FAILED')){throw new Error('Job failed');}
+    }
+    if(result&&result.answer){
+      document.getElementById('wr-body').innerHTML='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;font-size:12px;white-space:pre-wrap;margin-bottom:16px">'+result.answer+'</div>'+document.getElementById('wr-body').innerHTML;
+    }
+    toast('Weekly Report mis à jour ✓');
+  }catch(e){toast('Erreur DataWhisper: '+(e.message||e));}
+  btn.textContent='🔄 Actualiser';btn.disabled=false;
+}
+
 // ===================== INIT =====================
 loadU();
 loadPO2();
 checkTimings();
 renderCreators();
 renderBudget();
+// Load Chart.js async
+(function(){var s=document.createElement('script');s.src='https://cdn.jsdelivr.net/npm/chart.js@4.5.0/dist/chart.umd.js';document.head.appendChild(s);})();
 </script>
 </body>
 </html>
