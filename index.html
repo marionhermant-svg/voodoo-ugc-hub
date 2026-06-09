@@ -754,6 +754,78 @@ function ctStats(rows){
     '<div class="sc"><div class="sc-l">Budget engagé</div><div class="sc-v" style="color:#633806">$'+fmt(budget)+'</div></div>';
 }
 
+// ===================== NEW BATCH MODAL =====================
+function showNewBatch(){
+  // Populate creator datalist
+  var dl=document.getElementById('nb-creator-list');
+  if(dl){
+    dl.innerHTML='';
+    getCreators().filter(function(c){return c.cls==='signed'||c.cls==='long-term';}).forEach(function(c){
+      var opt=document.createElement('option');
+      opt.value='@'+c.handle;
+      dl.appendChild(opt);
+    });
+  }
+  // Reset rows
+  document.getElementById('nb-rows').innerHTML='';
+  addNBRow();
+  document.getElementById('nb-creator').value='';
+  document.getElementById('nb-price').value='';
+  var m=document.getElementById('batch-modal');
+  m.style.display='flex';
+}
+function hideNewBatch(){
+  document.getElementById('batch-modal').style.display='none';
+}
+function addNBRow(){
+  var container=document.getElementById('nb-rows');
+  var idx=container.children.length;
+  var row=document.createElement('div');
+  row.style.cssText='display:flex;gap:8px;align-items:center;margin-bottom:6px';
+  row.innerHTML='<select class="sel nb-game" style="flex:1">'+
+    ['SAL','CCA','MBS','PO2','Rush','Blitz','MC'].map(function(g){return '<option value="'+g+'">'+g+'</option>';}).join('')+
+    '</select>'+
+    '<input type="number" class="inp nb-qty" style="width:70px" placeholder="vidéos" min="1" value="3">'+
+    '<button class="del" onclick="this.parentNode.remove()" style="font-size:14px">×</button>';
+  container.appendChild(row);
+}
+function submitNewBatch(){
+  var creatorRaw=document.getElementById('nb-creator').value.trim();
+  var creator=creatorRaw.replace(/^@/,'');
+  var month=document.getElementById('nb-month').value;
+  var price=parseFloat(document.getElementById('nb-price').value)||0;
+  if(!creator){alert('Selectionne un créateur');return;}
+  // Find creator id
+  var cr=getCreators().find(function(c){return c.handle===creator;});
+  var cid=cr?cr.id:'';
+  // Collect game rows
+  var rows=document.querySelectorAll('#nb-rows > div');
+  if(!rows.length){alert('Ajoute au moins un jeu');return;}
+  var games=[],totalVids=0;
+  rows.forEach(function(row){
+    var g=row.querySelector('.nb-game').value;
+    var qty=parseInt(row.querySelector('.nb-qty').value)||1;
+    games.push({game:g,qty:qty});
+    totalVids+=qty;
+  });
+  // Create one content row per game line
+  if(!U._av) U._av=[];
+  games.forEach(function(gd){
+    var nid='va'+Date.now()+Math.random().toString(36).slice(2,5);
+    var ppv=price&&totalVids>0?Math.round(price/totalVids*gd.qty):0;
+    var items=makeItems(gd.qty);
+    U._av.push({id:nid,creator:creator,cid:cid,month:month,game:gd.game,total:gd.qty,price:ppv,contract:false,items:items});
+  });
+  saveU();
+  hideNewBatch();
+  renderContent();
+  toast('Batch créé — '+totalVids+' vidéos pour @'+creator);
+}
+function addContentRow(){
+  // Quick add — opens the batch modal
+  showNewBatch();
+}
+
 function renderContent(){
   var mf=document.getElementById('ct-month').value;
   var gf=document.getElementById('ct-game').value;
