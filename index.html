@@ -305,8 +305,11 @@ a:hover{text-decoration:underline}
 <!-- BUDGET -->
 <div class="panel" id="tab-budget">
   <div class="stats" id="bg-stats"></div>
-  <div class="sec">Par mois</div>
-  <div class="month-grid" id="bg-months"></div>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+    <div class="sec" style="margin:0">Par mois</div>
+    <button class="btn" style="font-size:11px" onclick="addBudgetMonth()">+ Ajouter mois</button>
+  </div>
+  <div id="bg-months"></div>
   <div class="sec">Par jeu</div>
   <div class="game-bar" id="bg-games"></div>
 </div>
@@ -396,7 +399,7 @@ var BASE_CREATORS=[
 ];
 
 // Items = per-video sub-rows
-function makeItems(n){var a=[];for(var i=0;i<n;i++)a.push({vgp:'',inf:'',received:false,receivedAt:''});return a;}
+function makeItems(n){var a=[];for(var i=0;i<n;i++)a.push({vgp:'',inf:'',concept:'',received:false,receivedAt:''});return a;}
 
 var BASE_CONTENT=[
   // March - validated
@@ -920,7 +923,7 @@ function buildContentTable(rows,isDoneSection){
       html+='<tr><td colspan="11" style="padding:0;border-bottom:1px solid #e0dfd8">'+
         '<table style="width:100%;border-collapse:collapse;background:#fafaf4">'+
         '<thead><tr>'+
-        '<th style="padding:5px 10px;width:120px">INF Code</th>'+
+        '<th style="padding:5px 10px;width:120px">INF Code</th>'+'<th style="padding:5px 10px;width:160px">Concept</th>'+
         '<th style="padding:5px 10px">Lien VGP</th>'+
         '<th style="padding:5px 10px;width:60px;text-align:center">Reçu</th>'+
         '<th style="padding:5px 10px;width:115px">Date reçue</th>'+
@@ -930,6 +933,9 @@ function buildContentTable(rows,isDoneSection){
           '<td><input class="inp" placeholder="INF code..." value="'+esc(it.inf||'')+'"'+
             ' oninput="editItem(\''+v.id+'\','+i+',\'inf\',this.value)"'+
             ' style="width:110px"></td>'+
+          '<td><input class="inp" placeholder="Concept..." value="'+esc(it.concept||'')+'"'+
+            ' oninput="editItem(\''+v.id+'\','+i+',\'concept\',this.value)"'+
+            ' style="width:150px"></td>'+
           '<td>'+(it.vgp?'<a href="'+esc(it.vgp)+'" target="_blank" style="font-size:10px;margin-right:4px">↗</a>':'')+
             '<input class="inp" placeholder="Coller lien VGP..." value="'+esc(it.vgp||'')+'"'+
             ' oninput="editItem(\''+v.id+'\','+i+',\'vgp\',this.value)"'+
@@ -1143,12 +1149,21 @@ function exportData(){
 }
 
 // ===================== BUDGET =====================
-var MONTHS=[
-  {name:'March 2026',budget:19050,videos:84},
-  {name:'April 2026',budget:9650,videos:46},
-  {name:'May 2026',budget:1050,videos:35},
-  {name:'June 2026',budget:3200,videos:21}
+var BASE_MONTHS=[
+  {id:'bm1',name:'March 2026',budget:19050,videos:84},
+  {id:'bm2',name:'April 2026',budget:9650,videos:46},
+  {id:'bm3',name:'May 2026',budget:1050,videos:35},
+  {id:'bm4',name:'June 2026',budget:3200,videos:21}
 ];
+function getMonths(){
+  var added=U.bm_added||[];
+  var deleted=U.bm_deleted||[];
+  var edited=U.bm_edited||{};
+  var base=BASE_MONTHS.filter(function(m){return deleted.indexOf(m.id)<0;})
+    .map(function(m){return edited[m.id]?Object.assign({},m,edited[m.id]):m;});
+  return base.concat(added);
+}
+var MONTHS=BASE_MONTHS; // kept for compatibility
 var GAMES=[
   {g:'SAL',name:'Sand Loop',v:47,cls:'g-sal'},
   {g:'CCA',name:'Castle Busters',v:36,cls:'g-cca'},
@@ -1159,17 +1174,47 @@ var GAMES=[
   {g:'Blitz',name:'Blitz',v:15,cls:'g-blitz'}
 ];
 
+function addBudgetMonth(){
+  var name=prompt('Nom du mois (ex: July 2026):');
+  if(!name||!name.trim()) return;
+  var budget=parseInt(prompt('Budget ($):')||'0')||0;
+  var videos=parseInt(prompt('Nombre de vidéos:')||'0')||0;
+  var entry={id:'bm'+Date.now(),name:name.trim(),budget:budget,videos:videos};
+  if(!U.bm_added) U.bm_added=[];
+  U.bm_added.push(entry);
+  saveU(); renderBudget(); toast('Mois ajouté ✓');
+}
+function deleteBudgetMonth(id){
+  if(!confirm('Supprimer ce mois du budget ?')) return;
+  var inBase=BASE_MONTHS.some(function(m){return m.id===id;});
+  if(inBase){if(!U.bm_deleted)U.bm_deleted=[];U.bm_deleted.push(id);}
+  else{U.bm_added=(U.bm_added||[]).filter(function(m){return m.id!==id;});}
+  saveU(); renderBudget(); toast('Mois supprimé');
+}
+function editBudgetMonth(id,field,val){
+  var inBase=BASE_MONTHS.some(function(m){return m.id===id;});
+  if(inBase){
+    if(!U.bm_edited)U.bm_edited={};
+    if(!U.bm_edited[id])U.bm_edited[id]={};
+    U.bm_edited[id][field]=val;
+  } else {
+    var m=(U.bm_added||[]).find(function(m){return m.id===id;});
+    if(m) m[field]=val;
+  }
+  saveU();
+}
 function renderBudget(){
-  var totalB=MONTHS.reduce(function(a,m){return a+m.budget;},0);
-  var totalV=MONTHS.reduce(function(a,m){return a+m.videos;},0);
+  var months=getMonths();
+  var totalB=months.reduce(function(a,m){return a+m.budget;},0);
+  var totalV=months.reduce(function(a,m){return a+m.videos;},0);
   var avgPPV=totalV>0?Math.round(totalB/totalV):0;
   document.getElementById('bg-stats').innerHTML=
     '<div class="sc amber"><div class="sc-l">Budget total</div><div class="sc-v">$'+fmt(totalB)+'</div></div>'+
     '<div class="sc"><div class="sc-l">Vidéos commandées</div><div class="sc-v">'+totalV+'</div></div>'+
     '<div class="sc"><div class="sc-l">Moy. $/vidéo</div><div class="sc-v">$'+fmt(avgPPV)+'</div></div>'+
-    '<div class="sc" style="background:#e1f5ee"><div class="sc-l" style="color:#085041">Mois actifs</div><div class="sc-v" style="color:#085041">'+MONTHS.length+'</div></div>';
+    '<div class="sc" style="background:#e1f5ee"><div class="sc-l" style="color:#085041">Mois actifs</div><div class="sc-v" style="color:#085041">'+months.length+'</div></div>';
 
-  document.getElementById('bg-months').innerHTML=MONTHS.map(function(m){
+  document.getElementById('bg-months').innerHTML=months.map(function(m){
     var avg=m.videos>0?Math.round(m.budget/m.videos):0;
     var cvids=getContent().filter(function(v){return v.month===m.name;});
     var rows=cvids.reduce(function(acc,v){
@@ -1178,24 +1223,54 @@ function renderBudget(){
       acc[k].vids+=v.total;acc[k].price+=v.price;acc[k].done+=receivedCount(v);
       return acc;
     },{});
-    var rowHtml=Object.values(rows).map(function(r){
-      return '<div class="cr-row">'+
-        '<span class="cr-name">@'+esc(r.creator)+'</span>'+
-        '<span class="cr-meta"><span class="gtag g-'+r.game+'">'+r.game+'</span></span>'+
-        '<span class="cr-meta">'+r.vids+'v</span>'+
-        '<span class="cr-meta">'+fmtP(r.price)+'</span>'+
-        '</div>';
-    }).join('');
-    return '<div class="mc"><div class="mc-hd"><span class="mc-name">'+m.name+'</span>'+
-      '<span class="mc-total">$'+fmt(m.budget)+'</span></div>'+
-      '<div style="font-size:10px;color:#888;margin-bottom:6px">'+m.videos+' vidéos · $'+fmt(avg)+'/v</div>'+
-      rowHtml+'</div>';
+    var rowHtml=Object.values(rows).length
+      ? '<div class="tw" style="margin-top:10px"><table style="width:100%"><thead><tr>'+
+          '<th style="text-align:left">Créateur</th><th>Jeu</th><th>Vidéos</th><th>Budget</th></tr></thead><tbody>'+
+          Object.values(rows).map(function(r){
+            return '<tr>'+
+              '<td style="font-weight:500">@'+esc(r.creator)+'</td>'+
+              '<td><span class="gtag g-'+r.game+'">'+r.game+'</span></td>'+
+              '<td>'+r.vids+'</td>'+
+              '<td>'+fmtP(r.price)+'</td></tr>';
+          }).join('')+
+          '</tbody></table></div>'
+      : '<div style="font-size:11px;color:#bbb;margin-top:10px;font-style:italic">Aucun contenu enregistré</div>';
+
+    return '<div style="background:#fff;border:1px solid #e0dfd8;border-radius:10px;padding:18px;margin-bottom:14px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:12px">'+
+        '<div>'+
+          '<div style="font-size:13px;font-weight:700;margin-bottom:4px">'+esc(m.name)+'</div>'+
+          '<div style="font-size:11px;color:#888">'+m.videos+' vidéos commandées · '+fmt(avg)+'$/vidéo</div>'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:10px">'+
+          '<div style="text-align:right">'+
+            '<div style="font-size:18px;font-weight:700;color:#633806">$'+fmt(m.budget)+'</div>'+
+          '</div>'+
+          '<div style="position:relative">'+
+            '<button class="btn" style="font-size:10px;padding:3px 8px" onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\'">··· Edit</button>'+
+            '<div style="display:none;position:absolute;right:0;top:100%;background:#fff;border:1px solid #e0dfd8;border-radius:8px;padding:12px;min-width:200px;z-index:10;box-shadow:0 4px 16px rgba(0,0,0,.1)">'+
+              '<div style="font-size:11px;color:#888;margin-bottom:6px">Budget ($)</div>'+
+              '<input type="number" value="'+m.budget+'" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:4px 8px;font-size:12px;margin-bottom:8px" '+
+                'onchange="editBudgetMonth(\''+m.id+'\',\'budget\',parseInt(this.value)||0);renderBudget()">'+
+              '<div style="font-size:11px;color:#888;margin-bottom:6px">Vidéos</div>'+
+              '<input type="number" value="'+m.videos+'" style="width:100%;border:1px solid #ddd;border-radius:4px;padding:4px 8px;font-size:12px;margin-bottom:10px" '+
+                'onchange="editBudgetMonth(\''+m.id+'\',\'videos\',parseInt(this.value)||0);renderBudget()">'+
+              '<button class="btn" style="font-size:10px;width:100%;background:#fee2e2;border-color:#fca5a5;color:#991b1b" '+
+                'onclick="deleteBudgetMonth(\''+m.id+'\')">🗑️ Supprimer ce mois</button>'+
+            '</div>'+
+          '</div>'+
+        '</div>'+
+      '</div>'+
+      rowHtml+
+      '</div>';
   }).join('');
 
   document.getElementById('bg-games').innerHTML=GAMES.map(function(g){
     return '<div class="gchip '+(g.cls||'g-po2')+'" style="min-width:90px">'+g.name+' <strong>'+g.v+'</strong></div>';
   }).join('');
 }
+
+
 
 
 // ===================== PO2 ORGANIQUE =====================
