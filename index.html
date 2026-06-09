@@ -635,7 +635,8 @@ function renderCreators(){
           ' style="cursor:grab">'+
           '<td style="width:20px">'+star+'</td>'+
           '<td><input class="inp" style="width:110px" placeholder="@handle" value="'+esc(c.handle||'')+'" oninput="editCr(\''+c.id+'\',\'handle\',this.value)"> '+timer+'</td>'+
-          '<td><input class="inp" style="width:120px;font-size:10px" placeholder="URL TikTok/IG" value="'+esc(c.url||'')+'" oninput="editCr(\''+c.id+'\',\'url\',this.value)"></td>'+
+          '<td>'+(c.url?'<a href="'+esc(c.url)+'" target="_blank" style="font-size:10px;margin-right:3px;color:#185fa5" title="Ouvrir TikTok">↗</a>':'')+
+          '<input class="inp" style="width:95px;font-size:10px" placeholder="URL TikTok/IG" value="'+esc(c.url||'')+'" oninput="editCr(\''+c.id+'\',\'url\',this.value)"></td>'+
           '<td><input class="inp" style="width:50px" placeholder="15K" value="'+esc(c.followers||'')+'" oninput="editCr(\''+c.id+'\',\'followers\',this.value)"></td>'+
           '<td>'+gameHtml+'</td>'+
           '<td><input class="inp sm" type="number" value="'+c.ppv+'" oninput="editCr(\''+c.id+'\',\'ppv\',+this.value)" style="width:55px"></td>'+
@@ -907,7 +908,7 @@ function buildContentTable(rows,isDoneSection){
     var expOpen=_expanded[v.id];
     html+='<tr class="main-row'+(expOpen?' expanded':'')+'" data-vid="'+v.id+'">'+
       '<td><button class="expander'+(expOpen?' open':'')+'" data-vid="'+v.id+'">▶</button></td>'+
-      '<td style="font-weight:500">@'+esc(v.creator)+'</td>'+
+      (function(){var _cr=getCreators().find(function(c){return c.handle===v.creator;});var _u=_cr&&_cr.url?_cr.url:'';return '<td style="font-weight:500">'+(_u?'<a href="'+esc(_u)+'" target="_blank" style="color:inherit;text-decoration:none">@'+esc(v.creator)+' <span style="font-size:9px;color:#888">↗</span></a>':'@'+esc(v.creator))+'</td>';})()+
       '<td style="color:#888;white-space:nowrap;font-size:10px">'+v.month+'</td>'+
       '<td><span class="gtag g-'+v.game+'">'+v.game+'</span></td>'+
       '<td style="font-weight:600">'+v.total+'</td>'+
