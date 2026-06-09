@@ -122,6 +122,7 @@ a:hover{text-decoration:underline}
   <div style="display:flex;gap:8px;align-items:center">
     <span id="sync-lbl" style="font-size:10px;color:#888"></span>
     <button class="btn" style="font-size:11px" onclick="exportData()" title="Télécharger un snapshot JSON des données modifiées">⬇ Export données</button>
+    <button class="btn" style="font-size:11px;background:#7c3aed;color:#fff" onclick="sendToClaudeSync()" title="Envoyer les données à Claude pour syncer GitHub Pages">📤 Sync GitHub</button>
     <button class="btn btn-dark" style="font-size:11px" onclick="addCreator()">+ Créateur</button>
   </div>
 </div>
@@ -632,24 +633,7 @@ function editCr(id,field,val){
 function changeClsCr(id,cls){
   var wasCls=getCreators().find(function(c){return c.id===id;});
   editCr(id,'cls',cls);
-  // if moved to active and has no content rows yet → auto-add placeholder
-  if(cls==='signed'||cls==='long-term'){
-    editCr(id,'contactedAt',Date.now());
-    var existing=getContent().filter(function(v){return v.cid===id;});
-    if(!existing.length){
-      var cr=getCreators().find(function(c){return c.id===id;});
-      var games=cr&&cr.games?cr.games:[];
-      if(games.length>0){
-        if(!U._av) U._av=[];
-        games.slice(0,1).forEach(function(g){
-          var nid='va'+Date.now()+Math.random().toString(36).slice(2,5);
-          U._av.push({id:nid,creator:cr.handle,cid:id,month:'June 2026',game:g,total:3,price:cr.ppv*3||0,contract:false,items:makeItems(3)});
-        });
-        saveU();
-        toast('@'+cr.handle+' ajouté dans Contenu → Juin 2026');
-      }
-    }
-  }
+    if(cls==='signed'||cls==='long-term') editCr(id,'contactedAt',Date.now());
   renderCreators();
 }
 function delCr(id){
@@ -661,7 +645,7 @@ function delCr(id){
 }
 function addCreator(){
   var id='cu'+Date.now();
-  var c={id:id,handle:'Nouveau créateur',url:'',followers:'',games:['CCA'],ppv:150,cls:'to-contact',isLT:false,email:'',contactedAt:null,driveUrl:'',note:''};
+  var c={id:id,handle:'Nouveau créateur',url:'',followers:'',games:[],ppv:150,cls:'to-contact',isLT:false,email:'',contactedAt:null,driveUrl:'',note:''};
   if(!U._ac) U._ac=[];
   U._ac.push(c);
   saveU(); _sectionOpen['to-contact']=true; renderCreators();
@@ -977,6 +961,29 @@ function checkTimings(){
   });
 }
 
+// ===================== SYNC TO CLAUDE =====================
+function sendToClaudeSync(){
+  var snapshot={
+    exportedAt:new Date().toISOString(),
+    creators:getCreators(),
+    content:getContent().map(function(v){
+      return {
+        id:v.id,creator:v.creator,cid:v.cid,month:v.month,
+        game:v.game,total:v.total,price:v.price,contract:v.contract,
+        items:v.items.map(function(it){return {vgp:it.vgp,inf:it.inf,received:it.received,driveUrl:it.driveUrl||'',date:it.date||''};})
+      };
+    }),
+    po2:getPO2()
+  };
+  var json=JSON.stringify(snapshot);
+  if(typeof window.sendPrompt==='function'){
+    window.sendPrompt('SYNC_DATA:'+json);
+    toast('Données envoyées à Claude ✓');
+  } else {
+    toast('sendPrompt non disponible — utilise ⬇ Export données');
+  }
+}
+
 // ===================== EXPORT =====================
 function exportData(){
   // Snapshot of current full state — creators + content with all manual edits applied
@@ -999,6 +1006,62 @@ function exportData(){
   a.click();
   toast('Données exportées — partage ce fichier à Claude pour mettre à jour le hub');
 }
+
+// ===================== BUDGET =====================
+var MONTHS=[
+  {name:'March 2026',budget:19050,videos:84},
+  {name:'April 2026',budget:9650,videos:46},
+  {name:'May 2026',budget:1050,videos:35},
+  {name:'June 2026',budget:3200,videos:21}
+];
+var GAMES=[
+  {g:'SAL',name:'Sand Loop',v:47,cls:'g-sal'},
+  {g:'CCA',name:'Castle Busters',v:36,cls:'g-cca'},
+  {g:'MC',name:'Mob Control',v:18,cls:'g-mc'},
+  {g:'MBS',name:'Marble Sort',v:37,cls:'g-mbs'},
+  {g:'PO2',name:'Paper.io 2',v:22,cls:'g-po2'},
+  {g:'Rush',name:'Rush Arena',v:22,cls:'g-rush'},
+  {g:'Blitz',name:'Blitz',v:15,cls:'g-blitz'}
+];
+
+function renderBudget(){
+  var totalB=MONTHS.reduce(function(a,m){return a+m.budget;},0);
+  var totalV=MONTHS.reduce(function(a,m){return a+m.videos;},0);
+  var avgPPV=totalV>0?Math.round(totalB/totalV):0;
+  document.getElementById('bg-stats').innerHTML=
+    '<div class="sc amber"><div class="sc-l">Budget total</div><div class="sc-v">$'+fmt(totalB)+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Vidéos commandées</div><div class="sc-v">'+totalV+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Moy. $/vidéo</div><div class="sc-v">$'+fmt(avgPPV)+'</div></div>'+
+    '<div class="sc" style="background:#e1f5ee"><div class="sc-l" style="color:#085041">Mois actifs</div><div class="sc-v" style="color:#085041">'+MONTHS.length+'</div></div>';
+
+  document.getElementById('bg-months').innerHTML=MONTHS.map(function(m){
+    var avg=m.videos>0?Math.round(m.budget/m.videos):0;
+    var cvids=getContent().filter(function(v){return v.month===m.name;});
+    var rows=cvids.reduce(function(acc,v){
+      var k=v.creator+'|'+v.game;
+      if(!acc[k]) acc[k]={creator:v.creator,game:v.game,vids:0,price:0,done:0};
+      acc[k].vids+=v.total;acc[k].price+=v.price;acc[k].done+=receivedCount(v);
+      return acc;
+    },{});
+    var rowHtml=Object.values(rows).map(function(r){
+      return '<div class="cr-row">'+
+        '<span class="cr-name">@'+esc(r.creator)+'</span>'+
+        '<span class="cr-meta"><span class="gtag g-'+r.game+'">'+r.game+'</span></span>'+
+        '<span class="cr-meta">'+r.vids+'v</span>'+
+        '<span class="cr-meta">'+fmtP(r.price)+'</span>'+
+        '</div>';
+    }).join('');
+    return '<div class="mc"><div class="mc-hd"><span class="mc-name">'+m.name+'</span>'+
+      '<span class="mc-total">$'+fmt(m.budget)+'</span></div>'+
+      '<div style="font-size:10px;color:#888;margin-bottom:6px">'+m.videos+' vidéos · $'+fmt(avg)+'/v</div>'+
+      rowHtml+'</div>';
+  }).join('');
+
+  document.getElementById('bg-games').innerHTML=GAMES.map(function(g){
+    return '<div class="gchip '+(g.cls||'g-po2')+'" style="min-width:90px">'+g.name+' <strong>'+g.v+'</strong></div>';
+  }).join('');
+}
+
 
 // ===================== PO2 ORGANIQUE =====================
 var PO2_SK='vg-po2-v1';
@@ -1425,74 +1488,48 @@ function renderWeeklyReport(){
 
 async function refreshWeeklyReport(){
   var btn=document.getElementById('wr-btn');
-  btn.textContent='⏳ Chargement...';btn.disabled=true;
+  if(btn){btn.textContent='⏳ Envoi requête...';btn.disabled=true;}
   try{
     var submitRes=await window.cowork.callMcpTool(
       'mcp__0b27bde4-9c0f-4495-975e-d48bdc4a6e6c__submit-query-job___submit_query_job',
-      {prompt:'For the last 2 weeks, give me influencer UGC performance where author is marion.hermant@voodoo.io or creator names in naming (claymakesmoney,katxkelly,itssavagge,vietgramp,marygaming17,anxiety_doll,its_amandatimm,tonymuguio,pierrefll,famousque5). Provide: total spend per week, spend by game (SAL/MBS/PO2/MC/CCA/Rush/Blitz), spend by network (Meta,Google,TikTok,Other), videos uploaded per game, active creators count, top 5 steady high-spend INF codes with all-time and weekly spend, top 5 rising INF codes gaining spend. Return as structured data.',
-       scope:'gaming',session_id:WR_SESSION||undefined,user_email:'marion.hermant@voodoo.io'}
+      {prompt:'For the last 2 completed weeks, for influencer UGC videos where author is marion.hermant@voodoo.io, give me: 1) total spend per week, 2) spend by game (SAL/MBS/PO2/MC/CCA/Rush/Blitz), 3) spend by network (Meta,Google,TikTok,Other), 4) videos uploaded per game per week, 5) active creators count (co-authors), 6) top 5 steady high-spend INF codes with all-time spend and weekly spend, 7) top 5 new rising INF codes. Return as structured labeled data.',
+       scope:'gaming',user_email:'marion.hermant@voodoo.io'}
     );
-    if(submitRes&&submitRes.session_id) WR_SESSION=submitRes.session_id;
     var jobId=submitRes&&submitRes.job_id;
     if(!jobId) throw new Error('No job ID');
-    var result=null;
-    for(var i=0;i<60;i++){
-      await new Promise(function(r){setTimeout(r,5000);});
-      var s=await window.cowork.callMcpTool('mcp__0b27bde4-9c0f-4495-975e-d48bdc4a6e6c__get-job-status___get_job_status',{job_id:jobId});
-      if(s&&(s.state==='succeeded'||s.state==='COMPLETED')){result=s.result;break;}
-      if(s&&(s.state==='failed'||s.state==='FAILED')){throw new Error('Job failed');}
+    if(btn) btn.textContent='⏳ En cours (~1-5 min)...';
+    // Poll with setTimeout to avoid blocking
+    var maxAttempts=60, attempt=0;
+    function poll(){
+      if(attempt>=maxAttempts){
+        if(btn){btn.textContent='🔄 Actualiser';btn.disabled=false;}
+        toast('Timeout DataWhisper');return;
+      }
+      attempt++;
+      window.cowork.callMcpTool('mcp__0b27bde4-9c0f-4495-975e-d48bdc4a6e6c__get-job-status___get_job_status',{job_id:jobId}).then(function(s){
+        if(s&&(s.state==='succeeded'||s.state==='COMPLETED')){
+          if(s.result&&s.result.answer){
+            var existing=document.getElementById('wr-dw-result');
+            if(existing) existing.remove();
+            var div=document.createElement('div');
+            div.id='wr-dw-result';
+            div.style.cssText='background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px;font-size:12px;white-space:pre-wrap;margin-bottom:16px';
+            div.textContent='📊 DataWhisper — '+new Date().toLocaleDateString('fr-FR')+'\n\n'+s.result.answer;
+            var body=document.getElementById('wr-body');
+            if(body) body.prepend(div);
+          }
+          if(btn){btn.textContent='🔄 Actualiser';btn.disabled=false;}
+          toast('Weekly Report mis à jour ✓');
+        } else {
+          setTimeout(poll, 8000);
+        }
+      }).catch(function(){setTimeout(poll,10000);});
     }
-    if(result&&result.answer){
-      document.getElementById('wr-body').innerHTML='<div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;font-size:12px;white-space:pre-wrap;margin-bottom:16px">'+result.answer+'</div>'+document.getElementById('wr-body').innerHTML;
-    }
-    toast('Weekly Report mis à jour ✓');
-  }catch(e){toast('Erreur DataWhisper: '+(e.message||e));}
-  btn.textContent='🔄 Actualiser';btn.disabled=false;
-}
-
-
-// ===================== NEW BATCH MODAL =====================
-function showNewBatch(){
-  // Populate creator datalist
-  var dl=document.getElementById('nb-creator-list');
-  dl.innerHTML=getCreators().map(function(c){return '<option value="'+esc(c.handle)+'">';}).join('');
-  document.getElementById('nb-rows').innerHTML='';
-  document.getElementById('nb-creator').value='';
-  document.getElementById('nb-price').value='';
-  addNBRow();
-  var m=document.getElementById('batch-modal');
-  m.style.display='flex';
-}
-function hideNewBatch(){document.getElementById('batch-modal').style.display='none';}
-function addNBRow(){
-  var div=document.createElement('div');
-  div.style.cssText='display:flex;gap:8px;margin-bottom:6px;align-items:center';
-  div.innerHTML='<select class="sel nb-game" style="flex:1"><option>SAL</option><option>CCA</option><option>MBS</option><option>PO2</option><option>Rush</option><option>Blitz</option><option>MC</option></select>'+
-    '<input type="number" class="inp nb-qty" style="width:60px" placeholder="# vids" min="1" value="3">'+
-    '<button class="del" onclick="this.parentNode.remove()" title="Supprimer">×</button>';
-  document.getElementById('nb-rows').appendChild(div);
-}
-function submitNewBatch(){
-  var creatorHandle=document.getElementById('nb-creator').value.trim().replace(/^@/,'');
-  var month=document.getElementById('nb-month').value;
-  var price=parseFloat(document.getElementById('nb-price').value)||0;
-  var gameRows=document.querySelectorAll('#nb-rows > div');
-  if(!creatorHandle||!gameRows.length){toast('Merci de remplir le créateur et au moins un jeu');return;}
-  var creator=getCreators().find(function(c){return c.handle.replace(/^@/,'')===creatorHandle||c.handle===creatorHandle||('@'+c.handle)===('@'+creatorHandle);});
-  var cid=creator?creator.id:'';
-  var added=0;
-  gameRows.forEach(function(row){
-    var game=row.querySelector('.nb-game').value;
-    var qty=parseInt(row.querySelector('.nb-qty').value)||1;
-    var id='va'+Date.now()+Math.random().toString(36).slice(2,6);
-    if(!U._av) U._av=[];
-    U._av.push({id:id,creator:creatorHandle,cid:cid,month:month,game:game,total:qty,price:price/gameRows.length|0,contract:false,items:makeItems(qty)});
-    added++;
-  });
-  saveU();
-  hideNewBatch();
-  renderContent();
-  toast(added+' batch(es) créé(s) pour @'+creatorHandle);
+    setTimeout(poll, 5000);
+  }catch(e){
+    if(btn){btn.textContent='🔄 Actualiser';btn.disabled=false;}
+    toast('Erreur: '+(e.message||e));
+  }
 }
 
 // ===================== INIT =====================
