@@ -870,6 +870,17 @@ function renderContent(){
   bindContentEvents();
 }
 
+function bindContentEvents(){
+  // Expander click — toggle sub-rows
+  document.querySelectorAll('.expander[data-vid]').forEach(function(btn){
+    btn.addEventListener('click',function(){
+      var vid=this.dataset.vid;
+      _expanded[vid]=!_expanded[vid];
+      renderContent();
+    });
+  });
+}
+
 function buildContentTable(rows,isDoneSection){
   if(!rows.length) return '<div class="tw"><table><tbody><tr class="empty"><td colspan="9">Aucune ligne</td></tr></tbody></table></div>';
   var html='<div class="tw"><table><thead><tr>'+
