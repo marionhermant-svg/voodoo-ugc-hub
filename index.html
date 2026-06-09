@@ -158,6 +158,7 @@ a:hover{text-decoration:underline}
     <select id="ct-status" onchange="renderContent()"><option value="">Tous statuts</option><option>In production</option><option>Received</option><option>Validated</option><option>Rework</option><option>Cancelled</option></select>
     <input type="text" id="ct-inf" placeholder="Recherche INF code..." oninput="renderContent()" style="width:160px">
     <button class="btn" onclick="addContentRow()">+ Ajouter ligne</button>
+    <button class="btn btn-dark" style="font-size:11px" onclick="showNewBatch()">+ New Batch</button>
   </div>
   <div id="ct-active"></div>
   <div id="ct-done-wrap" style="display:none">
@@ -265,6 +266,37 @@ a:hover{text-decoration:underline}
   <div class="game-bar" id="bg-games"></div>
 </div>
 
+
+<!-- NEW BATCH MODAL -->
+<div id="batch-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.45);z-index:500;align-items:center;justify-content:center">
+  <div style="background:#fff;border-radius:10px;padding:24px;width:480px;max-height:90vh;overflow-y:auto;border:1px solid #e0dfd8">
+    <div style="font-size:14px;font-weight:600;margin-bottom:16px">+ New Batch</div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Créateur</label>
+      <input id="nb-creator" list="nb-creator-list" class="inp" style="width:100%" placeholder="Tapez le nom du créateur...">
+      <datalist id="nb-creator-list"></datalist>
+    </div>
+    <div style="margin-bottom:8px">
+      <label style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Mois</label>
+      <select id="nb-month" class="sel" style="width:100%">
+        <option>March 2026</option><option>April 2026</option><option>May 2026</option><option selected>June 2026</option><option>July 2026</option>
+      </select>
+    </div>
+    <div style="margin-bottom:8px">
+      <label style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:6px">Jeux & vidéos</label>
+      <div id="nb-rows"></div>
+      <button class="btn" style="margin-top:6px;font-size:11px" onclick="addNBRow()">+ Ajouter un jeu</button>
+    </div>
+    <div style="margin-bottom:12px">
+      <label style="font-size:11px;color:#888;text-transform:uppercase;letter-spacing:.05em;display:block;margin-bottom:4px">Prix total ($)</label>
+      <input id="nb-price" type="number" class="inp" style="width:120px" placeholder="ex: 450">
+    </div>
+    <div style="display:flex;gap:8px;justify-content:flex-end;margin-top:16px">
+      <button class="btn" onclick="hideNewBatch()">Annuler</button>
+      <button class="btn btn-dark" onclick="submitNewBatch()">Créer le batch</button>
+    </div>
+  </div>
+</div>
 </div>
 <div class="toast" id="toast"></div>
 
@@ -275,35 +307,35 @@ var NOW=Date.now();
 var DAY=86400000;
 
 var BASE_CREATORS=[
-  {id:'c1',handle:'marygaming17',url:'https://tiktok.com/@marygaming17',followers:'46K',games:['SAL'],ppv:100,cls:'active',isLT:true,email:'marygaming17.17@gmail.com',contactedAt:null,driveUrl:'',note:''},
-  {id:'c2',handle:'liamgimig',url:'https://tiktok.com/@liamgimig',followers:'302K',games:['PO2'],ppv:125,cls:'active',isLT:false,email:'liamgimig@slogansocial.com',contactedAt:null,driveUrl:'',note:''},
-  {id:'c3',handle:'katxkelly',url:'',followers:'~',games:['PO2','SAL'],ppv:200,cls:'active',isLT:true,email:'katkellyny@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c1',handle:'marygaming17',url:'https://tiktok.com/@marygaming17',followers:'46K',games:['SAL'],ppv:100,cls:'signed',isLT:true,email:'marygaming17.17@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c2',handle:'liamgimig',url:'https://tiktok.com/@liamgimig',followers:'302K',games:['PO2'],ppv:125,cls:'signed',isLT:false,email:'liamgimig@slogansocial.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c3',handle:'katxkelly',url:'',followers:'~',games:['PO2','SAL'],ppv:200,cls:'signed',isLT:true,email:'katkellyny@gmail.com',contactedAt:null,driveUrl:'',note:''},
   {id:'c4',handle:'alex.cochrane',url:'https://tiktok.com/@alex.cochrane',followers:'~',games:['Blitz','CCA'],ppv:300,cls:'long-term',isLT:true,email:'awalkercochrane@gmail.com',contactedAt:null,driveUrl:'',note:''},
-  {id:'c5',handle:'claymakesmoney',url:'https://tiktok.com/@claymakesmoney',followers:'~',games:['SAL','CCA','MBS'],ppv:200,cls:'active',isLT:true,email:'clayadamsmusic@gmail.com',contactedAt:null,driveUrl:'',note:'$50 bonus référence'},
-  {id:'c6',handle:'itssavagge',url:'',followers:'~',games:['CCA','Rush'],ppv:185,cls:'active',isLT:false,email:'itssavagge@gmail.com',contactedAt:null,driveUrl:'',note:''},
-  {id:'c7',handle:'vietgramp',url:'https://tiktok.com/@vietgramp',followers:'~',games:['Rush','PO2','SAL','CCA'],ppv:100,cls:'active',isLT:true,email:'vandonnguyen11@gmail.com',contactedAt:null,driveUrl:'',note:''},
-  {id:'c8',handle:'pierrefll',url:'https://tiktok.com/@pierrefll',followers:'650K',games:['Rush'],ppv:500,cls:'active',isLT:false,email:'Pierrefleurimond19@gmail.com',contactedAt:null,driveUrl:'',note:''},
-  {id:'c9',handle:'tonymuguio',url:'https://tiktok.com/@tonymuguio',followers:'240K',games:['Rush','PO2'],ppv:375,cls:'active',isLT:false,email:'tonymuguio@gmail.com',contactedAt:null,driveUrl:'',note:''},
-  {id:'c10',handle:'famousque5',url:'https://tiktok.com/@famousque5',followers:'330K',games:['Rush'],ppv:500,cls:'active',isLT:false,email:'Reevesdaquavius86@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c5',handle:'claymakesmoney',url:'https://tiktok.com/@claymakesmoney',followers:'~',games:['SAL','CCA','MBS'],ppv:200,cls:'signed',isLT:true,email:'clayadamsmusic@gmail.com',contactedAt:null,driveUrl:'',note:'$50 bonus référence'},
+  {id:'c6',handle:'itssavagge',url:'',followers:'~',games:['CCA','Rush'],ppv:185,cls:'signed',isLT:false,email:'itssavagge@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c7',handle:'vietgramp',url:'https://tiktok.com/@vietgramp',followers:'~',games:['Rush','PO2','SAL','CCA'],ppv:100,cls:'signed',isLT:true,email:'vandonnguyen11@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c8',handle:'pierrefll',url:'https://tiktok.com/@pierrefll',followers:'650K',games:['Rush'],ppv:500,cls:'signed',isLT:false,email:'Pierrefleurimond19@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c9',handle:'tonymuguio',url:'https://tiktok.com/@tonymuguio',followers:'240K',games:['Rush','PO2'],ppv:375,cls:'signed',isLT:false,email:'tonymuguio@gmail.com',contactedAt:null,driveUrl:'',note:''},
+  {id:'c10',handle:'famousque5',url:'https://tiktok.com/@famousque5',followers:'330K',games:['Rush'],ppv:500,cls:'signed',isLT:false,email:'Reevesdaquavius86@gmail.com',contactedAt:null,driveUrl:'',note:''},
   // June batch - signed
-  {id:'j1',handle:'malachigwyn.ugc',url:'https://tiktok.com/@malachigwyn.ugc',followers:'591',games:['CCA'],ppv:100,cls:'active',isLT:false,email:'malachigwyn.ugc@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
-  {id:'j2',handle:'ugcwithisaac',url:'https://tiktok.com/@ugcwithisaac',followers:'1K',games:['CCA'],ppv:167,cls:'active',isLT:false,email:'ugcwithisaac@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:'$500 pack 3'},
-  {id:'j3',handle:'stevenstart2finish',url:'https://tiktok.com/@stevenstart2finish',followers:'1.4K',games:['MC'],ppv:150,cls:'active',isLT:false,email:'UGCbySteven@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
-  {id:'j4',handle:'darindavis2324',url:'https://tiktok.com/@darindavis2324',followers:'472',games:['MC','SAL','MBS'],ppv:150,cls:'active',isLT:false,email:'Darinugcgenx@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
-  {id:'j5',handle:'joshugccreator',url:'https://tiktok.com/@joshugccreator',followers:'1K',games:['CCA','MC'],ppv:150,cls:'active',isLT:false,email:'josh.truenorthugc@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
-  {id:'j6',handle:'ugc_roy',url:'https://tiktok.com/@ugc_roy',followers:'3.8K',games:['MC','SAL','MBS'],ppv:200,cls:'active',isLT:false,email:'roy@ugcroy.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
-  {id:'j7',handle:'chrisrockugc',url:'https://tiktok.com/@chrisrockugc',followers:'505',games:['MC','SAL','MBS'],ppv:150,cls:'active',isLT:false,email:'chris@chrisrockugc.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
+  {id:'j1',handle:'malachigwyn.ugc',url:'https://tiktok.com/@malachigwyn.ugc',followers:'591',games:['CCA'],ppv:100,cls:'signed',isLT:false,email:'malachigwyn.ugc@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
+  {id:'j2',handle:'ugcwithisaac',url:'https://tiktok.com/@ugcwithisaac',followers:'1K',games:['CCA'],ppv:167,cls:'signed',isLT:false,email:'ugcwithisaac@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:'$500 pack 3'},
+  {id:'j3',handle:'stevenstart2finish',url:'https://tiktok.com/@stevenstart2finish',followers:'1.4K',games:['MC'],ppv:150,cls:'signed',isLT:false,email:'UGCbySteven@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
+  {id:'j4',handle:'darindavis2324',url:'https://tiktok.com/@darindavis2324',followers:'472',games:['MC','SAL','MBS'],ppv:150,cls:'signed',isLT:false,email:'Darinugcgenx@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
+  {id:'j5',handle:'joshugccreator',url:'https://tiktok.com/@joshugccreator',followers:'1K',games:['CCA','MC'],ppv:150,cls:'signed',isLT:false,email:'josh.truenorthugc@gmail.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
+  {id:'j6',handle:'ugc_roy',url:'https://tiktok.com/@ugc_roy',followers:'3.8K',games:['MC','SAL','MBS'],ppv:200,cls:'signed',isLT:false,email:'roy@ugcroy.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
+  {id:'j7',handle:'chrisrockugc',url:'https://tiktok.com/@chrisrockugc',followers:'505',games:['MC','SAL','MBS'],ppv:150,cls:'signed',isLT:false,email:'chris@chrisrockugc.com',contactedAt:NOW-5*DAY,driveUrl:'',note:''},
   // June batch - in negotiation
   {id:'j8',handle:'helvio_ugc',url:'https://tiktok.com/@helvio_ugc',followers:'1K',games:['CCA'],ppv:100,cls:'in-negotiation',isLT:false,email:'contact.helvio@gmail.com',contactedAt:NOW-4*DAY,driveUrl:'',note:'offre $300'},
   {id:'j9',handle:'ugcwithcaleb',url:'https://tiktok.com/@ugcwithcaleb',followers:'1K',games:['CCA'],ppv:150,cls:'in-negotiation',isLT:false,email:'hello@ugcwithcaleb.com',contactedAt:NOW-4*DAY,driveUrl:'',note:'offre $450'},
-  {id:'j10',handle:'doug_ugc',url:'https://tiktok.com/@doug_ugc',followers:'200',games:['CCA','SAL','MBS'],ppv:150,cls:'in-negotiation',isLT:false,email:'Collabwithdoug@gmail.com',contactedAt:NOW-4*DAY,driveUrl:'',note:'offre $450'},
+  {id:'j10',handle:'doug_ugc',url:'https://tiktok.com/@doug_ugc',followers:'200',games:['CCA','MBS'],ppv:150,cls:'signed',isLT:false,email:'Collabwithdoug@gmail.com',contactedAt:NOW-4*DAY,driveUrl:'',note:'ACCEPTÉ ✓ $450 pack 3. Split : 2 CCA + 1 MBS. Contrat Tomorro envoyé.'},
   {id:'j11',handle:'nextwaveugc',url:'https://tiktok.com/@nextwaveugc',followers:'810',games:['MC','SAL','MBS'],ppv:180,cls:'in-negotiation',isLT:false,email:'chadbartlettcreates@gmail.com',contactedAt:NOW-4*DAY,lastSentAt:NOW,driveUrl:'',note:'Chad. Contre-offre $180/v ($540 pack 3). Liens drives + co-création envoyés.'},
   {id:'j12',handle:'chrismugc',url:'https://tiktok.com/@chrismugc',followers:'1.2K',games:['MC','SAL','MBS'],ppv:200,cls:'in-negotiation',isLT:false,email:'chrismccarthyugc@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $600'},
   {id:'j13',handle:'brycebrandyugc',url:'https://tiktok.com/@brycebrandyugc',followers:'1.3K',games:['MC'],ppv:200,cls:'in-negotiation',isLT:false,email:'hello@brycebrandyugc.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $600'},
-  {id:'j14',handle:'ksocialugc',url:'https://tiktok.com/@ksocialugc',followers:'1.4K',games:['MBS','SAL'],ppv:167,cls:'active',isLT:false,email:'ksocialugc@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'ACCEPTÉ ✓ $500 pack 3. Split : 2 Marble Sort, 1 Sand Loop. Contrat à envoyer demain.'},
+  {id:'j14',handle:'ksocialugc',url:'https://tiktok.com/@ksocialugc',followers:'1.4K',games:['MBS','SAL'],ppv:167,cls:'signed',isLT:false,email:'ksocialugc@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'ACCEPTÉ ✓ $500 pack 3. Split : 2 Marble Sort, 1 Sand Loop. Contrat à envoyer demain.'},
   {id:'j15',handle:'masonpatrickmedia',url:'https://tiktok.com/@masonpatrickmedia',followers:'3.7K',games:['CCA'],ppv:200,cls:'in-negotiation',isLT:false,email:'MasonPatrickUGC@yahoo.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $600'},
   {id:'j16',handle:'smcconnellugc',url:'https://tiktok.com/@smcconnellugc',followers:'515',games:['MC','SAL','MBS'],ppv:150,cls:'in-negotiation',isLT:false,email:'mcconnells1987@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $450'},
-  {id:'j17',handle:'ugcbylouis',url:'https://tiktok.com/@ugcbylouis',followers:'1.3K',games:['CCA'],ppv:150,cls:'in-negotiation',isLT:false,email:'louishugc@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'offre $450'},
+  {id:'j17',handle:'ugcbylouis',url:'https://tiktok.com/@ugcbylouis',followers:'1.3K',games:['CCA'],ppv:200,cls:'signed',isLT:false,email:'louishugc@gmail.com',contactedAt:NOW-3*DAY,driveUrl:'',note:'ACCEPTÉ ✓ $600 pack 3 ($200/v). Contrat Tomorro envoyé. Split : 3 CCA (Sydney 🇦🇺)'},
   {id:'j18',handle:'smitty_creates',url:'https://tiktok.com/@smitty_creates',followers:'838',games:['MC'],ppv:200,cls:'in-negotiation',isLT:false,email:'Ugcbysmitty@gmail.com',contactedAt:NOW-2*DAY,driveUrl:'',note:'offre $600'},
   {id:'j19',handle:'raycordovaugc',url:'https://tiktok.com/@raycordovaugc',followers:'2.5K',games:['MC','SAL','MBS'],ppv:250,cls:'in-negotiation',isLT:false,email:'contentbycordovarc@gmail.com',contactedAt:NOW-2*DAY,driveUrl:'',note:'dernier effort $250/v'},
   {id:'j20',handle:'joshiugc-dup',url:'',followers:'',games:['CCA'],ppv:0,cls:'out',isLT:false,email:'',contactedAt:null,driveUrl:'',note:'doublon supprimé — voir j30'},
@@ -319,7 +351,7 @@ var BASE_CREATORS=[
 ];
 
 // Items = per-video sub-rows
-function makeItems(n){var a=[];for(var i=0;i<n;i++)a.push({vgp:'',inf:'',received:false});return a;}
+function makeItems(n){var a=[];for(var i=0;i<n;i++)a.push({vgp:'',inf:'',received:false,receivedAt:''});return a;}
 
 var BASE_CONTENT=[
   // March - validated
@@ -403,12 +435,12 @@ var CLS_META={
   'to-contact':{label:'À contacter',badge:'b-blue',icon:'📋'},
   'contacted':{label:'Contactés',badge:'b-amber',icon:'📨'},
   'in-negotiation':{label:'En négociation',badge:'b-amber',icon:'💬'},
-  'active':{label:'Actifs ce mois',badge:'b-green',icon:'🟢'},
+  'signed':{label:'Signés',badge:'b-green',icon:'✅'},
   'long-term':{label:'Long Terme ★',badge:'b-purple',icon:'⭐'},
   'churned':{label:'Churned',badge:'b-gray',icon:'🔁'},
   'out':{label:'Out',badge:'b-red',icon:'🚫'}
 };
-var CLS_ORDER=['active','long-term','in-negotiation','contacted','to-contact','churned','out'];
+var CLS_ORDER=['to-contact','long-term','signed','in-negotiation','contacted','churned','out'];
 
 // Mail badges (populated by checkMails)
 var _mailBadges={};
@@ -507,16 +539,21 @@ function renderCreators(){
   });
 
   // stats
-  var signed=all.filter(function(c){return c.cls==='active'||c.cls==='long-term';}).length;
+  var signed=all.filter(function(c){return c.cls==='signed'||c.cls==='long-term';}).length;
   var nego=all.filter(function(c){return c.cls==='in-negotiation';}).length;
   var toC=all.filter(function(c){return c.cls==='to-contact';}).length;
   var lt=all.filter(function(c){return c.isLT;}).length;
+  // Active = from content tab (produced at least 1 video)
+  var allContent=getContent();
+  var currentMonth=new Date().toLocaleString('en-US',{month:'long'})+' '+new Date().getFullYear();
+  var activeCids=new Set(allContent.filter(function(v){return v.total>0;}).map(function(v){return v.cid||v.creator;}));
+  var activeCount=activeCids.size;
   document.getElementById('cr-stats').innerHTML=
     '<div class="sc"><div class="sc-l">Total</div><div class="sc-v">'+all.length+'</div></div>'+
-    '<div class="sc"><div class="sc-l">Actifs</div><div class="sc-v" style="color:#085041">'+signed+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Signés</div><div class="sc-v" style="color:#085041">'+signed+'</div></div>'+
     '<div class="sc"><div class="sc-l">⭐ Long terme</div><div class="sc-v" style="color:#633806">'+lt+'</div></div>'+
-    '<div class="sc"><div class="sc-l">En négo</div><div class="sc-v">'+nego+'</div></div>'+
-    '<div class="sc"><div class="sc-l">À contacter</div><div class="sc-v">'+toC+'</div></div>';
+    '<div class="sc"><div class="sc-l">Activés (contenu)</div><div class="sc-v" style="color:#185fa5">'+activeCount+'</div></div>'+
+    '<div class="sc"><div class="sc-l">En négo</div><div class="sc-v">'+nego+'</div></div>';
 
   var html='';
   CLS_ORDER.forEach(function(cls){
@@ -535,25 +572,28 @@ function renderCreators(){
     html+='<span class="sec-count">'+rows.length+'</span>';
     html+='</div>';
     if(open){
-      html+='<div class="tw"><table><thead><tr><th></th><th>Créateur</th><th>Followers</th><th>Jeux</th><th>$/vidéo</th><th>Drive</th><th>Notes</th><th></th><th></th></tr></thead><tbody id="cb-'+cls+'">';
+      html+='<div class="tw"><table><thead><tr><th></th><th>Handle</th><th>URL</th><th>Followers</th><th>Jeux</th><th>$/vidéo</th><th>Drive</th><th>Email</th><th>Notes</th><th>Statut</th><th></th></tr></thead><tbody id="cb-'+cls+'">';
       rows.forEach(function(c){
         var timer=contactBadge(c);
         var star='<span class="star'+(c.isLT?'':' off')+'" onclick="toggleLT(\''+c.id+'\',event)" title="Long terme">★</span>';
-        var drv=c.driveUrl?'<a href="'+esc(c.driveUrl)+'" target="_blank" style="font-size:10px">Drive ↗</a>':'<input class="inp md" placeholder="Drive URL" value="" oninput="editCr(\''+c.id+'\',\'driveUrl\',this.value)" style="width:90px">';
+        var drvVal=c.driveUrl||'';
+        var drvCell=(drvVal?'<a href="'+esc(drvVal)+'" target="_blank" style="font-size:10px;display:block">↗ Drive</a>':'')+
+          '<input class="inp" placeholder="Drive URL" value="'+esc(drvVal)+'" oninput="editCr(\''+c.id+'\',\'driveUrl\',this.value)" style="width:85px;font-size:10px">';
         var gameHtml=gtags(c.games)+' <button class="btn" style="height:18px;font-size:10px;padding:0 5px" onclick="addGame(\''+c.id+'\')">+</button>';
-        var cNameHtml=c.url?'<a href="'+esc(c.url)+'" target="_blank">@'+esc(c.handle)+'</a>':'@'+esc(c.handle);
         html+='<tr draggable="true" data-id="'+c.id+'" data-sec="'+cls+'"'+
           ' ondragstart="dragStart(event,\''+c.id+'\',\''+cls+'\')"'+
           ' ondragover="dragOver(event)"'+
           ' ondrop="drop(event,\''+cls+'\')"'+
           ' style="cursor:grab">'+
           '<td style="width:20px">'+star+'</td>'+
-          '<td>'+cNameHtml+' '+timer+'</td>'+
-          '<td style="color:#888">'+esc(c.followers)+'</td>'+
+          '<td><input class="inp" style="width:110px" placeholder="@handle" value="'+esc(c.handle||'')+'" oninput="editCr(\''+c.id+'\',\'handle\',this.value)"> '+timer+'</td>'+
+          '<td><input class="inp" style="width:120px;font-size:10px" placeholder="URL TikTok/IG" value="'+esc(c.url||'')+'" oninput="editCr(\''+c.id+'\',\'url\',this.value)"></td>'+
+          '<td><input class="inp" style="width:50px" placeholder="15K" value="'+esc(c.followers||'')+'" oninput="editCr(\''+c.id+'\',\'followers\',this.value)"></td>'+
           '<td>'+gameHtml+'</td>'+
           '<td><input class="inp sm" type="number" value="'+c.ppv+'" oninput="editCr(\''+c.id+'\',\'ppv\',+this.value)" style="width:55px"></td>'+
-          '<td>'+drv+'</td>'+
-          '<td><input class="inp" placeholder="Notes..." value="'+esc(c.note||'')+'" oninput="editCr(\''+c.id+'\',\'note\',this.value)" style="width:120px"></td>'+
+          '<td>'+drvCell+'</td>'+
+          '<td><input class="inp" style="width:130px;font-size:10px" placeholder="email..." value="'+esc(c.email||'')+'" oninput="editCr(\''+c.id+'\',\'email\',this.value)"></td>'+
+          '<td><input class="inp" placeholder="Notes..." value="'+esc(c.note||'')+'" oninput="editCr(\''+c.id+'\',\'note\',this.value)" style="width:100px"></td>'+
           '<td>'+
             '<select class="sel" onchange="changeClsCr(\''+c.id+'\',this.value)" style="font-size:10px">'+
             CLS_ORDER.map(function(k){return '<option value="'+k+'"'+(c.cls===k?' selected':'')+'>'+CLS_META[k].icon+' '+CLS_META[k].label+'</option>';}).join('')+
@@ -593,7 +633,7 @@ function changeClsCr(id,cls){
   var wasCls=getCreators().find(function(c){return c.id===id;});
   editCr(id,'cls',cls);
   // if moved to active and has no content rows yet → auto-add placeholder
-  if(cls==='active'||cls==='long-term'){
+  if(cls==='signed'||cls==='long-term'){
     editCr(id,'contactedAt',Date.now());
     var existing=getContent().filter(function(v){return v.cid===id;});
     if(!existing.length){
@@ -764,6 +804,7 @@ function buildContentTable(rows,isDoneSection){
         '<th style="padding:5px 10px;width:120px">INF Code</th>'+
         '<th style="padding:5px 10px">Lien VGP</th>'+
         '<th style="padding:5px 10px;width:60px;text-align:center">Reçu</th>'+
+        '<th style="padding:5px 10px;width:115px">Date reçue</th>'+
         '</tr></thead><tbody>';
       v.items.forEach(function(it,i){
         html+='<tr class="sub-table-row'+(i===v.items.length-1?' sub-last':'')+'">'+
@@ -775,7 +816,11 @@ function buildContentTable(rows,isDoneSection){
             ' oninput="editItem(\''+v.id+'\','+i+',\'vgp\',this.value)"'+
             ' style="width:220px"></td>'+
           '<td style="text-align:center"><input type="checkbox" class="chk"'+(it.received?' checked':'')+
-            ' onchange="editItem(\''+v.id+'\','+i+',\'received\',this.checked)"></td>'+
+            ' onchange="editItem(\''+v.id+'\','+i+',\'received\',this.checked);autoDate(this,\''+v.id+'\','+i+')"></td>'+
+          '<td><input type="date" class="inp" style="width:110px"'+
+            ' value="'+(it.receivedAt||'')+'"'+
+            ' onchange="editItem(\''+v.id+'\','+i+',\'receivedAt\',this.value)">'+
+          '</td>'+
           '</tr>';
       });
       html+='</tbody></table></td></tr>';
@@ -785,121 +830,33 @@ function buildContentTable(rows,isDoneSection){
   return html;
 }
 
-function bindContentEvents(){
-  document.querySelectorAll('.expander').forEach(function(btn){
-    btn.onclick=function(e){
-      e.stopPropagation();
-      var id=this.getAttribute('data-vid');
-      _expanded[id]=!_expanded[id];
-      renderContent();
-    };
-  });
-}
-
-function editVR(id,field,val){
-  if(!U[id]) U[id]={};
-  U[id][field]=val;
-  var b=BASE_CONTENT.find(function(v){return v.id===id;});
-  if(b) b[field]=val;
-  var a=(U._av||[]).find(function(v){return v.id===id;});
-  if(a) a[field]=val;
-  saveU(); renderContent();
-}
-function editItem(vid,idx,field,val){
-  if(!U[vid]) U[vid]={};
-  var base=BASE_CONTENT.find(function(v){return v.id===vid;});
-  var items=(U[vid].items)||(base?base.items.map(function(x){return Object.assign({},x);}):makeItems(3));
-  while(items.length<=idx) items.push({vgp:'',inf:'',received:false});
-  items[idx][field]=val;
-  U[vid].items=items;
-  if(base){base.items[idx]=base.items[idx]||{vgp:'',inf:'',received:false};base.items[idx][field]=val;}
-  saveU(); renderContent();
-}
-function delVR(id){
-  if(!confirm('Supprimer ?')) return;
-  if(!U._dv) U._dv=[];
-  U._dv.push(id);
-  if(U._av) U._av=(U._av||[]).filter(function(v){return v.id!==id;});
-  saveU(); renderContent(); toast('Supprimé');
-}
-function addContentRow(){
-  var id='va'+Date.now();
-  var r={id:id,creator:'',cid:'',month:'June 2026',game:'CCA',total:1,price:0,contract:false,items:makeItems(1)};
-  if(!U._av) U._av=[];
-  U._av.push(r);
-  saveU(); renderContent(); toast('Ligne ajoutée');
-}
-
-// ===================== BUDGET =====================
-var MONTHS=[
-  {name:'March 2026',budget:19050,videos:84},
-  {name:'April 2026',budget:9650,videos:46},
-  {name:'May 2026',budget:1050,videos:35},
-  {name:'June 2026',budget:3200,videos:21}
-];
-var GAMES=[
-  {g:'SAL',name:'Sand Loop',v:47,cls:'g-SAL'},
-  {g:'CCA',name:'Castle Busters',v:36,cls:'g-CCA'},
-  {g:'MC',name:'Mob Control',v:18,cls:'g-MC'},
-  {g:'MBS',name:'Marble Sort',v:37,cls:'g-MBS'},
-  {g:'PO2',name:'Paper.io 2',v:22,cls:'g-PO2'},
-  {g:'Rush',name:'Rush Arena',v:22,cls:'g-Rush'},
-  {g:'Blitz',name:'Blitz',v:15,cls:'g-Blitz'}
-];
-
-function renderBudget(){
-  var totalB=MONTHS.reduce(function(a,m){return a+m.budget;},0);
-  var totalV=MONTHS.reduce(function(a,m){return a+m.videos;},0);
-  var avgPPV=totalV>0?Math.round(totalB/totalV):0;
-  document.getElementById('bg-stats').innerHTML=
-    '<div class="sc"><div class="sc-l">Budget total</div><div class="sc-v" style="color:#633806">$'+fmt(totalB)+'</div></div>'+
-    '<div class="sc"><div class="sc-l">Vidéos commandées</div><div class="sc-v">'+totalV+'</div></div>'+
-    '<div class="sc"><div class="sc-l">Moy. $/vidéo</div><div class="sc-v">$'+fmt(avgPPV)+'</div></div>';
-
-  document.getElementById('bg-months').innerHTML=MONTHS.map(function(m){
-    var avg=m.videos>0?Math.round(m.budget/m.videos):0;
-    var cvids=getContent().filter(function(v){return v.month===m.name;});
-    var rows=cvids.reduce(function(acc,v){
-      var k=v.creator+v.game;
-      if(!acc[k]) acc[k]={creator:v.creator,game:v.game,vids:0,price:0,done:0};
-      acc[k].vids+=v.total;acc[k].price+=v.price;acc[k].done+=receivedCount(v);
-      return acc;
-    },{});
-    var rowHtml=Object.values(rows).map(function(r){
-      return '<div class="mc-row">'+
-        '<span class="mc-n">@'+esc(r.creator)+'</span>'+
-        '<span class="mc-m"><span class="gtag g-'+r.game+'">'+r.game+'</span></span>'+
-        '<span class="mc-m">'+r.vids+'v</span>'+
-        '<span class="mc-m">'+fmtP(r.price)+'</span>'+
-        '</div>';
-    }).join('');
-    return '<div class="mc"><div class="mc-hd">'+
-      '<span class="mc-name">'+m.name+'</span>'+
-      '<span class="mc-total">$'+fmt(m.budget)+'</span>'+
-      '</div>'+
-      '<div style="font-size:10px;color:#888;margin-bottom:6px">'+m.videos+' vidéos · $'+fmt(avg)+'/v</div>'+
-      rowHtml+'</div>';
-  }).join('');
-
-  document.getElementById('bg-games').innerHTML=GAMES.map(function(g){
-    return '<div class="gchip '+(g.cls||'g-PO2')+'" style="min-width:90px">'+g.name+' <strong>'+g.v+'</strong></div>';
-  }).join('');
-}
-
-// ===================== RECAP =====================
+// ===================== MONTHLY RECAP =====================
 function renderRecap(){
   var mf=document.getElementById('rc-month').value;
-  var months=mf?[mf]:['March 2026','April 2026','May 2026','June 2026'];
-  var all=getContent();
+  var ALL_MONTHS=['March 2026','April 2026','May 2026','June 2026','July 2026','August 2026'];
+  var allContent=getContent();
+  var available=ALL_MONTHS.filter(function(m){return allContent.some(function(v){return v.month===m;});});
+  var months=mf?[mf]:available.slice().reverse();
+  var allCreators=getCreators();
   var html='';
   months.forEach(function(month){
-    var rows=all.filter(function(v){return v.month===month;});
+    var rows=allContent.filter(function(v){return v.month===month;});
     if(!rows.length) return;
     var totalV=rows.reduce(function(a,v){return a+v.total;},0);
     var totalR=rows.reduce(function(a,v){return a+receivedCount(v);},0);
     var totalP=rows.reduce(function(a,v){return a+v.price;},0);
     var doneRows=rows.filter(isDone).length;
     var contracts=rows.filter(function(v){return v.contract;}).length;
+    // New metrics
+    var prevRows=allContent.filter(function(v){return v.month!==month;});
+    var prevCids=prevRows.map(function(v){return v.cid||v.creator;});
+    var thisCids=rows.map(function(v){return v.cid||v.creator;});
+    var uniqueActivatedSet={};
+    rows.forEach(function(v){if(v.total>0) uniqueActivatedSet[v.cid||v.creator]=true;});
+    var uniqueActivated=Object.keys(uniqueActivatedSet);
+    var newSigned=uniqueActivated.filter(function(id){return prevCids.indexOf(id)<0;}).length;
+    var ltCount=allCreators.filter(function(c){return c.isLT;}).length;
+    var churnedCount=allCreators.filter(function(c){return c.cls==='churned';}).length;
     // per game
     var byGame={};
     rows.forEach(function(v){
@@ -917,18 +874,33 @@ function renderRecap(){
       byCr[v.creator].price+=v.price;
       if(byCr[v.creator].games.indexOf(v.game)<0) byCr[v.creator].games.push(v.game);
     });
-    html+='<div style="background:#fff;border:1px solid #e0dfd8;border-radius:8px;padding:16px;margin-bottom:16px">';
-    html+='<div style="display:flex;justify-content:space-between;align-items:baseline;margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid #f0efe8">';
-    html+='<div style="font-size:15px;font-weight:700">'+month+'</div>';
-    html+='<div style="font-size:13px;font-weight:600;color:#633806">$'+fmt(totalP)+'</div></div>';
-    // summary cards
-    html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">';
+    // INF codes
+    var infCodes=[];
+    rows.forEach(function(v){
+      v.items.forEach(function(it){
+        if(it.inf) infCodes.push({inf:it.inf.toUpperCase(),game:v.game,creator:v.creator,vgp:it.vgp||'',receivedAt:it.receivedAt||''});
+      });
+    });
+    html+='<div style="background:#fff;border:1px solid #e0dfd8;border-radius:10px;padding:18px;margin-bottom:20px">';
+    html+='<div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #f0efe8;padding-bottom:10px;margin-bottom:14px">';
+    html+='<div style="font-size:14px;font-weight:700">'+month+'</div>';
+    html+='<div style="font-size:18px;font-weight:700;color:#633806">$'+fmt(totalP)+'</div></div>';
+    // Row 1: base stats
+    html+='<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px">';
     html+='<div class="sc"><div class="sc-l">Vidéos cmd.</div><div class="sc-v">'+totalV+'</div></div>';
-    html+='<div class="sc"><div class="sc-l">Reçues</div><div class="sc-v" style="color:#085041">'+totalR+'</div></div>';
-    html+='<div class="sc"><div class="sc-l">Terminées</div><div class="sc-v">'+doneRows+'</div></div>';
+    html+='<div class="sc"><div class="sc-l">Vidéos reçues</div><div class="sc-v" style="color:#085041">'+totalR+'/'+totalV+'</div></div>';
+    html+='<div class="sc"><div class="sc-l" title="Batches où toutes les vidéos sont reçues">Batches ✓</div><div class="sc-v">'+doneRows+'</div></div>';
     html+='<div class="sc"><div class="sc-l">Contrats ✓</div><div class="sc-v">'+contracts+'</div></div>';
+    html+='<div class="sc amber"><div class="sc-l">Budget</div><div class="sc-v">$'+fmt(totalP)+'</div></div>';
     html+='</div>';
-    // by game
+    // Row 2: creator metrics
+    html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px">';
+    html+='<div class="sc" style="background:#e6f1fb"><div class="sc-l" style="color:#185fa5">Nouveaux signés</div><div class="sc-v" style="color:#185fa5">'+newSigned+'</div></div>';
+    html+='<div class="sc" style="background:#eeedfe"><div class="sc-l" style="color:#3c3489">Long terme ⭐</div><div class="sc-v" style="color:#3c3489">'+ltCount+'</div></div>';
+    html+='<div class="sc" style="background:#e1f5ee"><div class="sc-l" style="color:#085041">Activés ce mois</div><div class="sc-v" style="color:#085041">'+uniqueActivated.length+'</div></div>';
+    html+='<div class="sc" style="background:#fcebeb"><div class="sc-l" style="color:#791f1f">Churned</div><div class="sc-v" style="color:#791f1f">'+churnedCount+'</div></div>';
+    html+='</div>';
+    // Game breakdown
     html+='<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Par jeu</div>';
     html+='<div class="tw" style="margin-bottom:12px"><table><thead><tr><th>Jeu</th><th>Vidéos</th><th>Reçues</th><th>Budget</th></tr></thead><tbody>';
     Object.keys(byGame).forEach(function(g){
@@ -939,9 +911,9 @@ function renderRecap(){
         '<td>'+fmtP(r.price)+'</td></tr>';
     });
     html+='</tbody></table></div>';
-    // by creator
+    // Creator breakdown
     html+='<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Par créateur</div>';
-    html+='<div class="tw"><table><thead><tr><th>Créateur</th><th>Jeux</th><th>Vidéos</th><th>Reçues</th><th>Budget</th></tr></thead><tbody>';
+    html+='<div class="tw" style="margin-bottom:12px"><table><thead><tr><th>Créateur</th><th>Jeux</th><th>Vidéos</th><th>Reçues</th><th>Budget</th></tr></thead><tbody>';
     Object.keys(byCr).forEach(function(cr){
       var r=byCr[cr];
       var done=r.received===r.total;
@@ -953,40 +925,25 @@ function renderRecap(){
         '<td>'+fmtP(r.price)+'</td></tr>';
     });
     html+='</tbody></table></div>';
+    // INF codes list
+    if(infCodes.length){
+      html+='<div style="font-size:11px;font-weight:700;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">INF Codes ('+infCodes.length+')</div>';
+      html+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:8px">';
+      infCodes.sort(function(a,b){return a.inf<b.inf?-1:1;}).forEach(function(c){
+        var label=c.vgp?'<a href="'+esc(c.vgp)+'" target="_blank" style="font-family:monospace;font-weight:600;font-size:11px;color:#185fa5">'+c.inf+' ↗</a>':
+          '<span style="font-family:monospace;font-weight:600;font-size:11px">'+c.inf+'</span>';
+        html+='<div style="background:#f8f7f4;border:1px solid #e0dfd8;border-radius:5px;padding:3px 8px;font-size:10px">'+
+          label+' <span class="gtag g-'+c.game+'" style="font-size:9px">'+c.game+'</span>'+
+          (c.receivedAt?' <span style="color:#aaa;font-size:9px">'+c.receivedAt+'</span>':'')+
+          '</div>';
+      });
+      html+='</div>';
+    }
     html+='</div>';
   });
-  // INF Code performance section
-  var allCodes=[];
-  getContent().filter(function(v){
-    return !mf||v.month===mf;
-  }).forEach(function(v){
-    v.items.forEach(function(it){
-      if(it.inf) allCodes.push({inf:it.inf.toUpperCase(),vgp:it.vgp||'',creator:v.creator,game:v.game,month:v.month,received:it.received});
-    });
-  });
-  if(allCodes.length>0){
-    html+='<div style="background:#fff;border:1px solid #e0dfd8;border-radius:8px;padding:16px;margin-bottom:16px">';
-    html+='<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">';
-    html+='<div style="font-size:13px;font-weight:700">📊 Performance INF Codes</div>';
-    html+='<button id="dw-btn" class="btn btn-dark" style="font-size:11px" onclick="loadINFPerformance([\''+allCodes.map(function(c){return c.inf;}).filter(function(c,i,a){return a.indexOf(c)===i;}).join("','")+'\'],[])">📊 Charger performances via DataWhisper</button>';
-    html+='</div>';
-    html+='<div class="tw" style="margin-bottom:10px"><table><thead><tr><th>INF Code</th><th>Jeu</th><th>Créateur</th><th>Mois</th><th>Lien VGP</th><th>Reçu</th></tr></thead><tbody>';
-    allCodes.sort(function(a,b){return a.inf<b.inf?-1:1;}).forEach(function(c){
-      html+='<tr><td style="font-weight:600;font-family:monospace">'+esc(c.inf)+'</td>'+
-        '<td><span class="gtag g-'+c.game+'">'+c.game+'</span></td>'+
-        '<td>@'+esc(c.creator)+'</td>'+
-        '<td style="color:#888;font-size:10px">'+c.month+'</td>'+
-        '<td>'+(c.vgp?'<a href="'+esc(c.vgp)+'" target="_blank" style="font-size:10px">↗ VGP</a>':'<span style="color:#aaa">—</span>')+'</td>'+
-        '<td style="text-align:center">'+(c.received?'✓':'')+'</td>'+
-        '</tr>';
-    });
-    html+='</tbody></table></div>';
-    html+='<div id="dw-result"></div>';
-    html+='</div>';
-  }
-
-  document.getElementById('rc-body').innerHTML=html||'<p style="color:#aaa;font-size:12px;padding:20px 0">Aucune donnée pour ce mois.</p>';
+  document.getElementById('rc-body').innerHTML=html||'<p style="color:#aaa;font-size:12px;padding:20px 0">Aucune donnée disponible.</p>';
 }
+
 
 // ===================== TABS =====================
 function switchTab(name,el){
@@ -1129,7 +1086,11 @@ function buildPO2Table(rows){
     var expOpen=_po2Exp[r.id];
     html+='<tr class="main-row'+(expOpen?' expanded':'')+'" data-po2="'+r.id+'">'+
       '<td><button class="expander'+(expOpen?' open':'')+'" data-po2="'+r.id+'">▶</button></td>'+
-      '<td style="font-weight:500"><a href="'+esc(r.url)+'" target="_blank">'+esc(r.name)+'</a></td>'+
+      '<td>'+
+        '<input class="inp" style="width:100px" value="'+esc(r.name||'')+'" placeholder="Nom" oninput="editPO2(\''+r.id+'\',\'name\',this.value)"><br>'+
+        '<input class="inp" style="width:110px;font-size:10px;margin-top:2px" value="'+esc(r.url||'')+'" placeholder="URL TikTok" oninput="editPO2(\''+r.id+'\',\'url\',this.value)">'+
+        (r.url?'<a href="'+esc(r.url)+'" target="_blank" style="font-size:10px;margin-left:3px">↗</a>':'')+
+      '</td>'+
       '<td><span class="badge b-gray" style="font-size:10px">'+esc(r.agency||'Direct')+'</span></td>'+
       '<td><select class="sel" onchange="editPO2(\''+r.id+'\',\'status\',this.value)">'+sSelOpts+'</select></td>'+
       '<td>'+(r.ppv?'$'+r.ppv:'—')+'</td>'+
@@ -1487,6 +1448,51 @@ async function refreshWeeklyReport(){
     toast('Weekly Report mis à jour ✓');
   }catch(e){toast('Erreur DataWhisper: '+(e.message||e));}
   btn.textContent='🔄 Actualiser';btn.disabled=false;
+}
+
+
+// ===================== NEW BATCH MODAL =====================
+function showNewBatch(){
+  // Populate creator datalist
+  var dl=document.getElementById('nb-creator-list');
+  dl.innerHTML=getCreators().map(function(c){return '<option value="'+esc(c.handle)+'">';}).join('');
+  document.getElementById('nb-rows').innerHTML='';
+  document.getElementById('nb-creator').value='';
+  document.getElementById('nb-price').value='';
+  addNBRow();
+  var m=document.getElementById('batch-modal');
+  m.style.display='flex';
+}
+function hideNewBatch(){document.getElementById('batch-modal').style.display='none';}
+function addNBRow(){
+  var div=document.createElement('div');
+  div.style.cssText='display:flex;gap:8px;margin-bottom:6px;align-items:center';
+  div.innerHTML='<select class="sel nb-game" style="flex:1"><option>SAL</option><option>CCA</option><option>MBS</option><option>PO2</option><option>Rush</option><option>Blitz</option><option>MC</option></select>'+
+    '<input type="number" class="inp nb-qty" style="width:60px" placeholder="# vids" min="1" value="3">'+
+    '<button class="del" onclick="this.parentNode.remove()" title="Supprimer">×</button>';
+  document.getElementById('nb-rows').appendChild(div);
+}
+function submitNewBatch(){
+  var creatorHandle=document.getElementById('nb-creator').value.trim().replace(/^@/,'');
+  var month=document.getElementById('nb-month').value;
+  var price=parseFloat(document.getElementById('nb-price').value)||0;
+  var gameRows=document.querySelectorAll('#nb-rows > div');
+  if(!creatorHandle||!gameRows.length){toast('Merci de remplir le créateur et au moins un jeu');return;}
+  var creator=getCreators().find(function(c){return c.handle.replace(/^@/,'')===creatorHandle||c.handle===creatorHandle||('@'+c.handle)===('@'+creatorHandle);});
+  var cid=creator?creator.id:'';
+  var added=0;
+  gameRows.forEach(function(row){
+    var game=row.querySelector('.nb-game').value;
+    var qty=parseInt(row.querySelector('.nb-qty').value)||1;
+    var id='va'+Date.now()+Math.random().toString(36).slice(2,6);
+    if(!U._av) U._av=[];
+    U._av.push({id:id,creator:creatorHandle,cid:cid,month:month,game:game,total:qty,price:price/gameRows.length|0,contract:false,items:makeItems(qty)});
+    added++;
+  });
+  saveU();
+  hideNewBatch();
+  renderContent();
+  toast(added+' batch(es) créé(s) pour @'+creatorHandle);
 }
 
 // ===================== INIT =====================
