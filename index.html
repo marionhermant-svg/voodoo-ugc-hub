@@ -209,9 +209,53 @@ a:hover{text-decoration:underline}
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
     <div>
       <div style="font-size:14px;font-weight:600">Weekly Performance Report</div>
-      <div style="font-size:11px;color:#888">Mis à jour chaque mardi soir via Voodoo Data Whisper</div>
+      <div style="font-size:11px;color:#888">Rapport hebdomadaire — saisie manuelle</div>
     </div>
-    <button class="btn btn-dark" id="wr-btn" onclick="refreshWeeklyReport()" style="font-size:11px">🔄 Actualiser</button>
+    <button class="btn btn-dark" style="font-size:11px" onclick="addWRWeek()">+ Nouvelle semaine</button>
+  </div>
+  <div id="wr-new-form" style="display:none;background:#f8f7f4;border:1px solid #e0dfd8;border-radius:10px;padding:16px;margin-bottom:16px">
+    <div style="font-size:13px;font-weight:600;margin-bottom:12px">Nouvelle semaine</div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div><label style="font-size:11px;color:#666;display:block;margin-bottom:3px">Label (ex: Week ending June 14, 2026)</label>
+        <input id="wr-new-label" type="text" style="width:100%;border:1px solid #d0cfc8;border-radius:5px;padding:6px 8px;font-size:12px" placeholder="Week ending June 14, 2026"></div>
+      <div><label style="font-size:11px;color:#666;display:block;margin-bottom:3px">Spend total ($)</label>
+        <input id="wr-new-spend" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:5px;padding:6px 8px;font-size:12px" placeholder="0"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+      <div><label style="font-size:11px;color:#666;display:block;margin-bottom:3px">Créateurs actifs</label>
+        <input id="wr-new-creators" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:5px;padding:6px 8px;font-size:12px" placeholder="0"></div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Vidéos uploadées par jeu</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:10px">
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">SAL</label><input id="wr-new-vsal" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">MBS</label><input id="wr-new-vmbs" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">PO2</label><input id="wr-new-vpo2" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">MC</label><input id="wr-new-vmc" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">CCA</label><input id="wr-new-vcca" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">Rush</label><input id="wr-new-vrush" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">Blitz</label><input id="wr-new-vblitz" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Spend par jeu ($)</div>
+    <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin-bottom:10px">
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">SAL</label><input id="wr-new-gsal" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">MBS</label><input id="wr-new-gmbs" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">PO2</label><input id="wr-new-gpo2" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">MC</label><input id="wr-new-gmc" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">CCA</label><input id="wr-new-gcca" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">Rush</label><input id="wr-new-grush" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">Blitz</label><input id="wr-new-gblitz" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+    </div>
+    <div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Spend par réseau ($)</div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px;margin-bottom:14px">
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">Meta</label><input id="wr-new-nmeta" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">Google</label><input id="wr-new-ngoogle" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">TikTok</label><input id="wr-new-ntiktok" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+      <div><label style="font-size:10px;color:#666;display:block;margin-bottom:2px">Other</label><input id="wr-new-nother" type="number" style="width:100%;border:1px solid #d0cfc8;border-radius:4px;padding:4px 6px;font-size:11px" placeholder="0"></div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <button class="btn btn-dark" onclick="saveWRWeek()" style="font-size:11px">✓ Créer la semaine</button>
+      <button class="btn" onclick="cancelWRWeek()" style="font-size:11px">Annuler</button>
+    </div>
   </div>
   <div id="wr-body"></div>
 </div>
@@ -643,6 +687,14 @@ function delCr(id){
   if(U._ac) U._ac=(U._ac||[]).filter(function(c){return c.id!==id;});
   saveU(); renderCreators(); toast('Supprimé');
 }
+function delVR(id){
+  if(!confirm('Supprimer ce batch de contenu ?')) return;
+  if(!U._dv) U._dv=[];
+  U._dv.push(id);
+  if(U._av) U._av=(U._av||[]).filter(function(v){return v.id!==id;});
+  saveU(); renderContent(); toast('Ligne supprimée');
+}
+
 function addCreator(){
   var id='cu'+Date.now();
   var c={id:id,handle:'Nouveau créateur',url:'',followers:'',games:[],ppv:150,cls:'to-contact',isLT:false,email:'',contactedAt:null,driveUrl:'',note:''};
@@ -1306,231 +1358,259 @@ var WR_SK='vg-weekly-v1';
 var WR_SESSION=null;
 
 // Embedded data from last DataWhisper query (auto-refreshed on demand)
-var WR_DATA=[
+// ===================== WEEKLY REPORT =====================
+var GAME_COLORS={SAL:'#f59e0b',MBS:'#10b981',PO2:'#6b7280',MC:'#f97316',CCA:'#3b82f6',Rush:'#ef4444',Blitz:'#8b5cf6'};
+var NET_COLORS={Meta:'#1877f2',Google:'#ea4335',TikTok:'#000000',Other:'#9ca3af'};
+var GAME_NAMES={SAL:'Sand Loop',MBS:'Marble Sort',PO2:'Paper.io 2',MC:'Mob Control',CCA:'Castle Busters',Rush:'Rush Arena',Blitz:'Blitz'};
+var GAMES_LIST=['SAL','MBS','PO2','MC','CCA','Rush','Blitz'];
+var NETS_LIST=['Meta','Google','TikTok','Other'];
+
+var BASE_WR=[
   {
-    week:'Week ending May 31, 2026',
-    totalSpend:24115,
-    activeCreators:33,
+    id:'wr1',week:'Week ending May 31, 2026',totalSpend:24115,activeCreators:33,
     videosUploaded:{SAL:1,MBS:36,PO2:1,MC:0,CCA:9,Rush:0,Blitz:0},
     spendByGame:{SAL:19428,MBS:3110,PO2:1573,MC:3,CCA:0,Rush:0,Blitz:0},
     spendByNetwork:{Meta:15682,Google:6171,Other:1500,TikTok:762},
-    coAuthors:[
-      {name:'sav',videos:6},{name:'khalil aigc',videos:5},{name:'don ngyuen',videos:3},
-      {name:'austin aigc',videos:2},{name:'perry aigc',videos:1},{name:'marcus aigc',videos:1},
-      {name:'micheline aigc',videos:1},{name:'mickey aigc',videos:1},{name:'odette aigc',videos:1},
-      {name:'raymond aigc',videos:1},{name:'quinn aigc',videos:1},{name:'malik aigc',videos:1},
-      {name:'renee aigc',videos:1},{name:'roger aigc',videos:1},{name:'sam aigc',videos:1},
-      {name:'simone aigc',videos:1},{name:'marcel aigc',videos:1},{name:'lucas aigc',videos:1},
-      {name:'lucien aigc',videos:1},{name:'bernard aigc',videos:1},{name:'josette aigc',videos:1},
-      {name:'jaden aigc',videos:1},{name:'isaac aigc',videos:1},{name:'huguette aigc',videos:1},
-      {name:'hae aigc',videos:1},{name:'guithilia aigc',videos:1},{name:'gerard aigc',videos:1},
-      {name:'gaston aigc',videos:1},{name:'georgie aigc',videos:1},{name:'fred aigc',videos:1},
-      {name:'fernand aigc',videos:1},{name:'brew aigc',videos:1},{name:'tarik aigc',videos:1}
-    ],
     topSteady:[
-      {inf:'INF8541',game:'SAL',allTime:536600,weekSpend:9700,vgp:'https://vgp-assets.voodoo.io/business/d86b69e8-a692-4354-9b25-7f23c64dc61e/assets/df8eaa63-7985-44eb-9257-3f2ac8f8f3f4/variants/5ff1dd71-f92c-4043-a05a-f93049e87f57/Blitz%20Win%20Cash%203%20(POV%20Text).mp4'},
-      {inf:'INF8868',game:'SAL',allTime:57700,weekSpend:6100,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/37edc710-879e-435f-ab6f-cc8e48008693/variants/bbad489d-366b-430b-aab1-f91c03322023/Sand%20Loop%201.mp4'},
+      {inf:'INF8541',game:'SAL',allTime:536600,weekSpend:9700,vgp:''},
+      {inf:'INF8868',game:'SAL',allTime:57700,weekSpend:6100,vgp:''},
       {inf:'INF8941',game:'SAL',allTime:15100,weekSpend:352,vgp:''},
       {inf:'INF8077',game:'SAL',allTime:14100,weekSpend:50,vgp:''},
       {inf:'INF8941',game:'MBS',allTime:13000,weekSpend:833,vgp:''}
     ],
     topRising:[
-      {inf:'INF9352',game:'MBS',allTime:3700,weekSpend:3700,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/d74a3112-b7b1-4710-86e0-229117c99bda/variants/702f6482-0401-403f-95ac-19128017e736/INF9352-1.mov'},
-      {inf:'INF9420',game:'MBS',allTime:1200,weekSpend:1200,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/230961bd-05c6-41cf-9445-9bfc4aaf8023/variants/8e6e1bdb-b1f4-4e64-a207-4f6c0d473f5e/INF9420.mp4'},
-      {inf:'INF9353',game:'MBS',allTime:602,weekSpend:602,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/e3f96cce-7c3e-482f-b6b7-5f64cb2a9f1f/variants/23c22d63-7ac3-43ac-8aba-125892b8093c/INF9353-1.mov'},
+      {inf:'INF9352',game:'MBS',allTime:3700,weekSpend:3700,vgp:''},
+      {inf:'INF9420',game:'MBS',allTime:1200,weekSpend:1200,vgp:''},
+      {inf:'INF9353',game:'MBS',allTime:602,weekSpend:602,vgp:''},
       {inf:'INF10096',game:'MBS',allTime:84,weekSpend:84,vgp:''},
       {inf:'INF10008',game:'MBS',allTime:66,weekSpend:66,vgp:''}
     ]
   },
   {
-    week:'Week ending June 7, 2026 ⚠️ partielle (4 jours)',
-    totalSpend:7045,
-    activeCreators:2,
+    id:'wr2',week:'Week ending June 7, 2026',totalSpend:7045,activeCreators:2,
     videosUploaded:{SAL:0,MBS:18,PO2:0,MC:0,CCA:2,Rush:0,Blitz:0},
     spendByGame:{SAL:5385,MBS:952,PO2:706,MC:2,CCA:0,Rush:0,Blitz:0},
     spendByNetwork:{Meta:3650,Google:2264,Other:706,TikTok:424},
-    coAuthors:[
-      {name:'ngage',videos:18},{name:'don ngyuen',videos:2}
-    ],
     topSteady:[
-      {inf:'INF8541',game:'SAL',allTime:536600,weekSpend:3100,vgp:'https://vgp-assets.voodoo.io/business/d86b69e8-a692-4354-9b25-7f23c64dc61e/assets/df8eaa63-7985-44eb-9257-3f2ac8f8f3f4/variants/5ff1dd71-f92c-4043-a05a-f93049e87f57/Blitz%20Win%20Cash%203%20(POV%20Text).mp4'},
-      {inf:'INF8868',game:'SAL',allTime:57700,weekSpend:725,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/37edc710-879e-435f-ab6f-cc8e48008693/variants/bbad489d-366b-430b-aab1-f91c03322023/Sand%20Loop%201.mp4'},
+      {inf:'INF8541',game:'SAL',allTime:536600,weekSpend:3100,vgp:''},
+      {inf:'INF8868',game:'SAL',allTime:57700,weekSpend:725,vgp:''},
       {inf:'INF8941',game:'MBS',allTime:13000,weekSpend:112,vgp:''},
       {inf:'INF8941',game:'SAL',allTime:15100,weekSpend:19,vgp:''},
       {inf:'INF8077',game:'SAL',allTime:14100,weekSpend:11,vgp:''}
     ],
     topRising:[
-      {inf:'INF9352',game:'MBS',allTime:3700,weekSpend:800,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/d74a3112-b7b1-4710-86e0-229117c99bda/variants/702f6482-0401-403f-95ac-19128017e736/INF9352-1.mov'},
-      {inf:'INF9420',game:'MBS',allTime:1200,weekSpend:300,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/230961bd-05c6-41cf-9445-9bfc4aaf8023/variants/8e6e1bdb-b1f4-4e64-a207-4f6c0d473f5e/INF9420.mp4'},
-      {inf:'INF9353',game:'MBS',allTime:602,weekSpend:150,vgp:'https://vgp-assets.voodoo.io/business/1273cc72-8114-4a03-9f7a-112941b16638/assets/e3f96cce-7c3e-482f-b6b7-5f64cb2a9f1f/variants/23c22d63-7ac3-43ac-8aba-125892b8093c/INF9353-1.mov'},
+      {inf:'INF9352',game:'MBS',allTime:3700,weekSpend:800,vgp:''},
+      {inf:'INF9420',game:'MBS',allTime:1200,weekSpend:300,vgp:''},
+      {inf:'INF9353',game:'MBS',allTime:602,weekSpend:150,vgp:''},
       {inf:'INF10008',game:'MBS',allTime:66,weekSpend:66,vgp:''},
       {inf:'INF10096',game:'MBS',allTime:84,weekSpend:84,vgp:''}
     ]
   }
 ];
 
-var GAME_COLORS={SAL:'#f59e0b',MBS:'#10b981',PO2:'#6b7280',MC:'#f97316',CCA:'#3b82f6',Rush:'#ef4444',Blitz:'#8b5cf6'};
-var NET_COLORS={Meta:'#1877f2',Google:'#ea4335',TikTok:'#000000',Other:'#9ca3af'};
-var GAME_NAMES={SAL:'Sand Loop',MBS:'Marble Sort',PO2:'Paper.io 2',MC:'Mob Control',CCA:'Castle Busters',Rush:'Rush Arena',Blitz:'Blitz'};
+function getWR(){
+  var added=(U.wr_added||[]);
+  var deleted=(U.wr_deleted||[]);
+  var base=BASE_WR.filter(function(w){return deleted.indexOf(w.id)<0;});
+  // Apply edits to base weeks
+  var edited=U.wr_edited||{};
+  base=base.map(function(w){return edited[w.id]?Object.assign({},w,edited[w.id]):w;});
+  return base.concat(added);
+}
+function saveWR(){saveU();}
+
+function addWRWeek(){
+  document.getElementById('wr-new-form').style.display='block';
+  document.getElementById('wr-new-label').focus();
+}
+function cancelWRWeek(){
+  document.getElementById('wr-new-form').style.display='none';
+  ['label','spend','creators','vsal','vmbs','vpo2','vmc','vcca','vrush','vblitz',
+   'gsal','gmbs','gpo2','gmc','gcca','grush','gblitz','nmeta','ngoogle','ntiktok','nother']
+  .forEach(function(k){var el=document.getElementById('wr-new-'+k);if(el)el.value='';});
+}
+function gv(id){return parseInt(document.getElementById(id).value)||0;}
+function saveWRWeek(){
+  var label=document.getElementById('wr-new-label').value.trim();
+  if(!label){alert('Saisis un label pour la semaine');return;}
+  var w={
+    id:'wr'+Date.now(),
+    week:label,
+    totalSpend:gv('wr-new-spend'),
+    activeCreators:gv('wr-new-creators'),
+    videosUploaded:{SAL:gv('wr-new-vsal'),MBS:gv('wr-new-vmbs'),PO2:gv('wr-new-vpo2'),MC:gv('wr-new-vmc'),CCA:gv('wr-new-vcca'),Rush:gv('wr-new-vrush'),Blitz:gv('wr-new-vblitz')},
+    spendByGame:{SAL:gv('wr-new-gsal'),MBS:gv('wr-new-gmbs'),PO2:gv('wr-new-gpo2'),MC:gv('wr-new-gmc'),CCA:gv('wr-new-gcca'),Rush:gv('wr-new-grush'),Blitz:gv('wr-new-gblitz')},
+    spendByNetwork:{Meta:gv('wr-new-nmeta'),Google:gv('wr-new-ngoogle'),TikTok:gv('wr-new-ntiktok'),Other:gv('wr-new-nother')},
+    topSteady:[],topRising:[]
+  };
+  if(!U.wr_added) U.wr_added=[];
+  U.wr_added.push(w);
+  saveWR();
+  cancelWRWeek();
+  renderWeeklyReport();
+  toast('Semaine ajoutée ✓');
+}
+function deleteWRWeek(id){
+  if(!confirm('Supprimer cette semaine ?')) return;
+  // Check if it's in BASE_WR
+  var inBase=BASE_WR.some(function(w){return w.id===id;});
+  if(inBase){
+    if(!U.wr_deleted) U.wr_deleted=[];
+    U.wr_deleted.push(id);
+  } else {
+    U.wr_added=(U.wr_added||[]).filter(function(w){return w.id!==id;});
+  }
+  saveWR(); renderWeeklyReport(); toast('Semaine supprimée');
+}
+function editWRField(id,field,subfield,val){
+  if(!U.wr_edited) U.wr_edited={};
+  if(!U.wr_edited[id]) U.wr_edited[id]={};
+  // Check if in wr_added
+  var added=(U.wr_added||[]).find(function(w){return w.id===id;});
+  if(added){
+    if(subfield) added[field][subfield]=val; else added[field]=val;
+  } else {
+    if(subfield){
+      if(!U.wr_edited[id][field]) U.wr_edited[id][field]={};
+      U.wr_edited[id][field][subfield]=val;
+    } else {
+      U.wr_edited[id][field]=val;
+    }
+  }
+  saveWR();
+}
+function addWRInfRow(wid,type){
+  var weeks=getWR();
+  var w=weeks.find(function(x){return x.id===wid;});
+  if(!w) return;
+  var arr=type==='steady'?w.topSteady:w.topRising;
+  arr.push({inf:'',game:'SAL',allTime:0,weekSpend:0,vgp:''});
+  // Save back
+  var inBase=BASE_WR.some(function(x){return x.id===wid;});
+  if(inBase){
+    if(!U.wr_edited) U.wr_edited={};
+    if(!U.wr_edited[wid]) U.wr_edited[wid]={};
+    if(!U.wr_edited[wid][type==='steady'?'topSteady':'topRising'])
+      U.wr_edited[wid][type==='steady'?'topSteady':'topRising']=arr;
+  } else {
+    var addedW=(U.wr_added||[]).find(function(x){return x.id===wid;});
+    if(addedW) addedW[type==='steady'?'topSteady':'topRising']=arr;
+  }
+  saveWR(); renderWeeklyReport();
+}
 
 function renderWeeklyReport(){
-  if(!WR_DATA||!WR_DATA.length){document.getElementById('wr-body').innerHTML='<p style="color:#aaa;padding:20px">Aucune donnée. Clique sur Actualiser.</p>';return;}
+  var weeks=getWR();
+  if(!weeks.length){
+    document.getElementById('wr-body').innerHTML='<p style="color:#aaa;padding:20px;text-align:center">Aucune semaine. Clique sur "+ Nouvelle semaine" pour commencer.</p>';
+    return;
+  }
   var html='';
-  WR_DATA.forEach(function(w,wi){
-    var gameKeys=Object.keys(w.spendByGame).filter(function(g){return w.spendByGame[g]>0;});
-    var netKeys=Object.keys(w.spendByNetwork).filter(function(n){return w.spendByNetwork[n]>0;});
-    html+='<div style="background:#fff;border:1px solid #e0dfd8;border-radius:10px;padding:18px;margin-bottom:20px">';
+  weeks.slice().reverse().forEach(function(w){
+    var wid=w.id;
+    var totalVids=GAMES_LIST.reduce(function(a,g){return a+(w.videosUploaded[g]||0);},0);
+    var topGame=GAMES_LIST.filter(function(g){return (w.spendByGame[g]||0)>0;}).sort(function(a,b){return (w.spendByGame[b]||0)-(w.spendByGame[a]||0);})[0]||'—';
+    html+='<div data-wid="'+wid+'" style="background:#fff;border:1px solid #e0dfd8;border-radius:10px;padding:18px;margin-bottom:20px">';
     // Header
     html+='<div style="display:flex;justify-content:space-between;align-items:baseline;border-bottom:1px solid #f0efe8;padding-bottom:10px;margin-bottom:14px">';
-    html+='<div style="font-size:14px;font-weight:700">'+w.week+'</div>';
-    html+='<div style="font-size:18px;font-weight:700;color:#633806">$'+fmt(w.totalSpend)+'</div></div>';
-    // Stats row
+    html+='<div style="font-size:14px;font-weight:700">'+esc(w.week)+'</div>';
+    html+='<div style="display:flex;align-items:center;gap:12px">';
+    html+='<span style="font-size:18px;font-weight:700;color:#633806">$'+fmt(w.totalSpend)+'</span>';
+    html+='<button class="del wr-del-week" data-wid="'+wid+'" title="Supprimer">×</button>';
+    html+='</div></div>';
+    // Stats
     html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px">';
     html+='<div class="sc"><div class="sc-l">Spend total</div><div class="sc-v" style="color:#633806">$'+fmt(w.totalSpend)+'</div></div>';
     html+='<div class="sc"><div class="sc-l">Créateurs actifs</div><div class="sc-v">'+w.activeCreators+'</div></div>';
-    var totalVids=Object.values(w.videosUploaded).reduce(function(a,b){return a+b;},0);
     html+='<div class="sc"><div class="sc-l">Vidéos uploadées</div><div class="sc-v">'+totalVids+'</div></div>';
-    var topGame=Object.keys(w.spendByGame).sort(function(a,b){return w.spendByGame[b]-w.spendByGame[a];})[0];
-    html+='<div class="sc"><div class="sc-l">Top jeu</div><div class="sc-v" style="font-size:14px">'+(GAME_NAMES[topGame]||topGame)+'</div></div>';
+    html+='<div class="sc"><div class="sc-l">Top jeu</div><div class="sc-v" style="font-size:13px">'+(GAME_NAMES[topGame]||topGame)+'</div></div>';
     html+='</div>';
-    // Uploads split by game
-    var uploadKeys=Object.keys(w.videosUploaded).filter(function(g){return w.videosUploaded[g]>0;});
-    if(uploadKeys.length){
-      html+='<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Vidéos uploadées par jeu</div>';
-      html+='<div style="display:flex;gap:8px;flex-wrap:wrap">';
-      uploadKeys.forEach(function(g){html+='<span style="background:'+GAME_COLORS[g]+'22;border:1px solid '+GAME_COLORS[g]+'44;border-radius:6px;padding:4px 10px;font-size:12px;font-weight:600;color:'+GAME_COLORS[g]+'">'+
-        (GAME_NAMES[g]||g)+' <strong>'+w.videosUploaded[g]+'</strong></span>';});
-      html+='</div></div>';
-    }
-    // Co-authors
-    if(w.coAuthors&&w.coAuthors.length){
-      html+='<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Créateurs actifs — co-auteurs ('+w.activeCreators+')</div>';
-      html+='<div style="display:flex;gap:6px;flex-wrap:wrap">';
-      w.coAuthors.forEach(function(c){
-        html+='<span style="background:#f8f7f4;border:1px solid #e0dfd8;border-radius:5px;padding:2px 8px;font-size:11px">'+esc(c.name)+(c.videos>1?' <strong>×'+c.videos+'</strong>':'')+'</span>';
-      });
-      html+='</div></div>';
-    }
-    // Charts row
-    html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">';
-    // Spend by game
-    html+='<div><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Spend par jeu</div>';
-    html+='<div style="position:relative;height:180px"><canvas id="wr-game-'+wi+'" role="img" aria-label="Spend par jeu semaine '+wi+'"></canvas></div>';
-    html+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">';
-    gameKeys.forEach(function(g){html+='<span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:'+GAME_COLORS[g]+'"></span>'+(GAME_NAMES[g]||g)+' $'+fmt(w.spendByGame[g])+'</span>';});
-    html+='</div></div>';
-    // Spend by network
-    html+='<div><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px">Spend par réseau</div>';
-    html+='<div style="position:relative;height:180px"><canvas id="wr-net-'+wi+'" role="img" aria-label="Spend par réseau semaine '+wi+'"></canvas></div>';
-    html+='<div style="display:flex;flex-wrap:wrap;gap:6px;margin-top:8px">';
-    netKeys.forEach(function(n){
-      var pct=Math.round(w.spendByNetwork[n]/w.totalSpend*100);
-      html+='<span style="font-size:10px;display:flex;align-items:center;gap:3px"><span style="width:8px;height:8px;border-radius:2px;background:'+NET_COLORS[n]+'"></span>'+n+' '+pct+'%</span>';
+    // Videos per game
+    html+='<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Vidéos uploadées par jeu</div>';
+    html+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">';
+    GAMES_LIST.forEach(function(g){
+      html+='<div style="text-align:center"><div style="font-size:10px;color:#666;margin-bottom:2px">'+g+'</div>'+
+        '<input type="number" class="wr-vgame" data-wid="'+wid+'" data-game="'+g+'" value="'+(w.videosUploaded[g]||0)+'" '+
+        'style="width:100%;border:1px solid #e0dfd8;border-radius:4px;padding:3px 5px;font-size:12px;text-align:center;background:'+GAME_COLORS[g]+'11"></div>';
     });
     html+='</div></div>';
-    html+='</div>';
-    // Tables: steady + rising
+    // Spend per game
+    html+='<div style="margin-bottom:12px"><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Spend par jeu ($)</div>';
+    html+='<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">';
+    GAMES_LIST.forEach(function(g){
+      html+='<div style="text-align:center"><div style="font-size:10px;color:#666;margin-bottom:2px">'+g+'</div>'+
+        '<input type="number" class="wr-sgame" data-wid="'+wid+'" data-game="'+g+'" value="'+(w.spendByGame[g]||0)+'" '+
+        'style="width:100%;border:1px solid #e0dfd8;border-radius:4px;padding:3px 5px;font-size:12px;text-align:center;background:'+GAME_COLORS[g]+'11"></div>';
+    });
+    html+='</div></div>';
+    // Spend per network
+    html+='<div style="margin-bottom:16px"><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Spend par réseau ($)</div>';
+    html+='<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:6px">';
+    NETS_LIST.forEach(function(n){
+      html+='<div style="text-align:center"><div style="font-size:10px;color:#666;margin-bottom:2px">'+n+'</div>'+
+        '<input type="number" class="wr-snet" data-wid="'+wid+'" data-net="'+n+'" value="'+(w.spendByNetwork[n]||0)+'" '+
+        'style="width:100%;border:1px solid #e0dfd8;border-radius:4px;padding:3px 5px;font-size:12px;text-align:center;background:'+NET_COLORS[n]+'11"></div>';
+    });
+    html+='</div></div>';
+    // INF tables
     html+='<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px">';
-    // Top steady
-    html+='<div><div style="font-size:11px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">⭐ Top spend — anciens & solides</div>';
-    html+='<div class="tw"><table><thead><tr><th>INF Code</th><th>Jeu</th><th>All-time</th><th>Cette sem.</th></tr></thead><tbody>';
-    w.topSteady.forEach(function(v){
-      var infCell=v.vgp?'<a href="'+esc(v.vgp)+'" target="_blank" style="font-family:monospace;font-weight:600;color:#185fa5;text-decoration:none" title="Voir sur VGP">'+v.inf+' ↗</a>':
-        '<span style="font-family:monospace;font-weight:600">'+v.inf+'</span>';
-      html+='<tr><td>'+infCell+'</td>';
-      html+='<td><span class="gtag g-'+v.game+'">'+v.game+'</span></td>';
-      html+='<td style="font-weight:600;color:#633806">$'+fmt(v.allTime)+'</td>';
-      html+='<td>$'+fmt(v.weekSpend)+'</td></tr>';
+    ['topSteady','topRising'].forEach(function(arrName){
+      var isSteady=arrName==='topSteady';
+      html+='<div><div style="font-size:11px;font-weight:600;color:'+(isSteady?'#888':'#085041')+';text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">'+(isSteady?'⭐ Top steady — high spend':'🚀 Rising — à garder à l\'oeil')+'</div>';
+      html+='<div class="tw"><table><thead><tr><th>INF Code</th><th>Jeu</th><th>All-time $</th><th>Cette sem. $</th></tr></thead><tbody>';
+      (w[arrName]||[]).forEach(function(v,vi){
+        html+='<tr>'+
+          '<td><input type="text" class="wr-inf-code" data-wid="'+wid+'" data-arr="'+arrName+'" data-idx="'+vi+'" data-field="inf" value="'+esc(v.inf||'')+'" style="border:none;width:80px;font-family:monospace;font-size:11px;background:transparent;font-weight:600;color:'+(isSteady?'#185fa5':'#085041')+'"></td>'+
+          '<td><select class="wr-inf-field" data-wid="'+wid+'" data-arr="'+arrName+'" data-idx="'+vi+'" data-field="game" style="border:none;font-size:10px;background:transparent">'+
+            GAMES_LIST.map(function(g){return '<option value="'+g+'"'+(g===v.game?' selected':'')+'>'+g+'</option>';}).join('')+
+          '</select></td>'+
+          '<td><input type="number" class="wr-inf-field" data-wid="'+wid+'" data-arr="'+arrName+'" data-idx="'+vi+'" data-field="allTime" value="'+(v.allTime||0)+'" style="border:none;width:70px;font-size:11px;background:transparent"></td>'+
+          '<td><input type="number" class="wr-inf-field" data-wid="'+wid+'" data-arr="'+arrName+'" data-idx="'+vi+'" data-field="weekSpend" value="'+(v.weekSpend||0)+'" style="border:none;width:60px;font-size:11px;background:transparent;font-weight:600;color:'+(isSteady?'#633806':'#085041')+'"></td>'+
+          '</tr>';
+      });
+      html+='</tbody></table></div>';
+      html+='<button class="btn wr-add-inf" data-wid="'+wid+'" data-type="'+(isSteady?'steady':'rising')+'" style="font-size:10px;margin-top:6px">+ ligne</button></div>';
     });
-    html+='</tbody></table></div></div>';
-    // Rising
-    html+='<div><div style="font-size:11px;font-weight:600;color:#085041;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">🚀 À garder à l\'oeil — vidéos montantes</div>';
-    html+='<div class="tw"><table><thead><tr><th>INF Code</th><th>Jeu</th><th>All-time</th><th>Cette sem.</th></tr></thead><tbody>';
-    w.topRising.forEach(function(v){
-      var infCell=v.vgp?'<a href="'+esc(v.vgp)+'" target="_blank" style="font-family:monospace;font-weight:600;color:#085041;text-decoration:none" title="Voir sur VGP">'+v.inf+' ↗</a>':
-        '<span style="font-family:monospace;font-weight:600;color:#085041">'+v.inf+'</span>';
-      html+='<tr><td>'+infCell+'</td>';
-      html+='<td><span class="gtag g-'+v.game+'">'+v.game+'</span></td>';
-      html+='<td>$'+fmt(v.allTime)+'</td>';
-      html+='<td style="font-weight:600;color:#085041">$'+fmt(v.weekSpend)+'</td></tr>';
-    });
-    html+='</tbody></table></div></div>';
-    html+='</div>';
-    html+='</div>';
+    html+='</div></div>';
   });
   document.getElementById('wr-body').innerHTML=html;
-  // Draw charts after DOM update
-  setTimeout(function(){
-    WR_DATA.forEach(function(w,wi){
-      var gameKeys=Object.keys(w.spendByGame).filter(function(g){return w.spendByGame[g]>0;});
-      var netKeys=Object.keys(w.spendByNetwork).filter(function(n){return w.spendByNetwork[n]>0;});
-      if(window.Chart){
-        new window.Chart(document.getElementById('wr-game-'+wi),{
-          type:'doughnut',
-          data:{labels:gameKeys.map(function(g){return GAME_NAMES[g]||g;}),
-                datasets:[{data:gameKeys.map(function(g){return w.spendByGame[g];}),
-                           backgroundColor:gameKeys.map(function(g){return GAME_COLORS[g]||'#999';}),
-                           borderWidth:2,borderColor:'#fff'}]},
-          options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.raw.toLocaleString('fr-FR');}}}}}
-        });
-        new window.Chart(document.getElementById('wr-net-'+wi),{
-          type:'doughnut',
-          data:{labels:netKeys,
-                datasets:[{data:netKeys.map(function(n){return w.spendByNetwork[n];}),
-                           backgroundColor:netKeys.map(function(n){return NET_COLORS[n]||'#999';}),
-                           borderWidth:2,borderColor:'#fff'}]},
-          options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{callbacks:{label:function(c){return ' $'+c.raw.toLocaleString('fr-FR')+' ('+Math.round(c.raw/w.totalSpend*100)+'%)';}}}}}
-        });
-      }
-    });
-  },100);
+  // Event delegation
+  var body=document.getElementById('wr-body');
+  body.addEventListener('change',function(e){
+    var t=e.target;
+    var wid=t.dataset.wid;if(!wid)return;
+    if(t.classList.contains('wr-vgame')) editWRField(wid,'videosUploaded',t.dataset.game,parseInt(t.value)||0);
+    if(t.classList.contains('wr-sgame')) editWRField(wid,'spendByGame',t.dataset.game,parseInt(t.value)||0);
+    if(t.classList.contains('wr-snet')) editWRField(wid,'spendByNetwork',t.dataset.net,parseInt(t.value)||0);
+    if(t.classList.contains('wr-inf-code')||t.classList.contains('wr-inf-field'))
+      editWRInfRow(wid,t.dataset.arr,parseInt(t.dataset.idx),t.dataset.field,t.type==='number'?parseInt(t.value)||0:t.value);
+  });
+  body.addEventListener('click',function(e){
+    var t=e.target;
+    if(t.classList.contains('wr-del-week')){deleteWRWeek(t.dataset.wid);return;}
+    if(t.classList.contains('wr-add-inf')){addWRInfRow(t.dataset.wid,t.dataset.type);return;}
+  });
 }
 
-async function refreshWeeklyReport(){
-  var btn=document.getElementById('wr-btn');
-  if(btn){btn.textContent='⏳ Envoi requête...';btn.disabled=true;}
-  try{
-    var submitRes=await window.cowork.callMcpTool(
-      'mcp__0b27bde4-9c0f-4495-975e-d48bdc4a6e6c__submit-query-job___submit_query_job',
-      {prompt:'For the last 2 completed weeks, for influencer UGC videos where author is marion.hermant@voodoo.io, give me: 1) total spend per week, 2) spend by game (SAL/MBS/PO2/MC/CCA/Rush/Blitz), 3) spend by network (Meta,Google,TikTok,Other), 4) videos uploaded per game per week, 5) active creators count (co-authors), 6) top 5 steady high-spend INF codes with all-time spend and weekly spend, 7) top 5 new rising INF codes. Return as structured labeled data.',
-       scope:'gaming',user_email:'marion.hermant@voodoo.io'}
-    );
-    var jobId=submitRes&&submitRes.job_id;
-    if(!jobId) throw new Error('No job ID');
-    if(btn) btn.textContent='⏳ En cours (~1-5 min)...';
-    // Poll with setTimeout to avoid blocking
-    var maxAttempts=60, attempt=0;
-    function poll(){
-      if(attempt>=maxAttempts){
-        if(btn){btn.textContent='🔄 Actualiser';btn.disabled=false;}
-        toast('Timeout DataWhisper');return;
-      }
-      attempt++;
-      window.cowork.callMcpTool('mcp__0b27bde4-9c0f-4495-975e-d48bdc4a6e6c__get-job-status___get_job_status',{job_id:jobId}).then(function(s){
-        if(s&&(s.state==='succeeded'||s.state==='COMPLETED')){
-          if(s.result&&s.result.answer){
-            var existing=document.getElementById('wr-dw-result');
-            if(existing) existing.remove();
-            var div=document.createElement('div');
-            div.id='wr-dw-result';
-            div.style.cssText='background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:14px;font-size:12px;white-space:pre-wrap;margin-bottom:16px';
-            div.textContent='📊 DataWhisper — '+new Date().toLocaleDateString('fr-FR')+'\n\n'+s.result.answer;
-            var body=document.getElementById('wr-body');
-            if(body) body.prepend(div);
-          }
-          if(btn){btn.textContent='🔄 Actualiser';btn.disabled=false;}
-          toast('Weekly Report mis à jour ✓');
-        } else {
-          setTimeout(poll, 8000);
-        }
-      }).catch(function(){setTimeout(poll,10000);});
-    }
-    setTimeout(poll, 5000);
-  }catch(e){
-    if(btn){btn.textContent='🔄 Actualiser';btn.disabled=false;}
-    toast('Erreur: '+(e.message||e));
+function editWRInfRow(wid,arrName,idx,field,val){
+  var weeks=getWR();
+  var w=weeks.find(function(x){return x.id===wid;});
+  if(!w) return;
+  var arr=(w[arrName]||[]);
+  if(!arr[idx]) arr[idx]={inf:'',game:'SAL',allTime:0,weekSpend:0,vgp:''};
+  arr[idx][field]=val;
+  var inBase=BASE_WR.some(function(x){return x.id===wid;});
+  if(inBase){
+    if(!U.wr_edited) U.wr_edited={};
+    if(!U.wr_edited[wid]) U.wr_edited[wid]={};
+    U.wr_edited[wid][arrName]=arr;
+  } else {
+    var addedW=(U.wr_added||[]).find(function(x){return x.id===wid;});
+    if(addedW) addedW[arrName]=arr;
   }
+  saveWR();
 }
+
 
 // ===================== INIT =====================
 loadU();
