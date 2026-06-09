@@ -874,6 +874,42 @@ function renderContent(){
   bindContentEvents();
 }
 
+function editItem(vid,idx,field,val){
+  // Find the content row (in BASE or in U._av)
+  var inAdded=(U._av||[]).find(function(v){return v.id===vid;});
+  if(inAdded){
+    if(!inAdded.items[idx]) inAdded.items[idx]={vgp:'',inf:'',concept:'',received:false,receivedAt:''};
+    inAdded.items[idx][field]=val;
+    saveU();
+    return;
+  }
+  // It's a base row — store in U overrides
+  if(!U[vid]) U[vid]={};
+  if(!U[vid].items){
+    // Copy base items first
+    var base=BASE_CONTENT.find(function(v){return v.id===vid;});
+    U[vid].items=(base&&base.items)?base.items.map(function(it){return Object.assign({},it);}):[];
+  }
+  while(U[vid].items.length<=idx) U[vid].items.push({vgp:'',inf:'',concept:'',received:false,receivedAt:''});
+  U[vid].items[idx][field]=val;
+  saveU();
+}
+
+function autoDate(checkbox,vid,idx){
+  if(checkbox.checked){
+    var today=new Date().toISOString().slice(0,10);
+    editItem(vid,idx,'receivedAt',today);
+    // Update the date input next to this checkbox
+    var row=checkbox.closest('tr');
+    if(row){
+      var dateInput=row.querySelector('input[type="date"]');
+      if(dateInput) dateInput.value=today;
+    }
+    // Check if all items received → update receivedCount display
+    renderContent();
+  }
+}
+
 function bindContentEvents(){
   // Expander click — toggle sub-rows
   document.querySelectorAll('.expander[data-vid]').forEach(function(btn){
