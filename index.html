@@ -112,6 +112,26 @@ a:hover{text-decoration:underline}
 /* Toast */
 .toast{position:fixed;bottom:14px;right:14px;background:#1a1a18;color:#fff;font-size:11px;padding:7px 12px;border-radius:6px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:999}
 .toast.show{opacity:1}
+
+/* ── Castle Busters ── */
+.cca-tabs{display:flex;gap:4px;margin-bottom:16px;border-bottom:1px solid #e0dfd8;padding-bottom:0}
+.cca-tab{padding:6px 14px;font-size:12px;font-weight:600;color:#888;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px}
+.cca-tab.active{color:#185fa5;border-bottom-color:#185fa5}
+.cca-panel{display:none}.cca-panel.active{display:block}
+.tier-section{margin-bottom:24px}
+.tier-hdr{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#888;margin-bottom:10px;display:flex;align-items:center;gap:8px}
+.tier-hdr span.tier-pill{padding:2px 8px;border-radius:20px;font-size:10px}
+.tier-amb{background:#fef3c7;color:#92400e}.tier-cre{background:#dbeafe;color:#1e3a8a}.tier-paid{background:#f3e8ff;color:#5b21b6}
+.batch-card{background:#fff;border:1px solid #e0dfd8;border-radius:10px;padding:16px;margin-bottom:12px}
+.batch-card-hdr{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.batch-creator{font-size:13px;font-weight:700;color:#185fa5;text-decoration:none}
+.batch-meta{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:10px}
+.batch-meta span{font-size:11px;color:#666;background:#f8f7f4;border:1px solid #e8e7e0;border-radius:4px;padding:2px 7px}
+.batch-prod{margin-top:10px;border-top:1px solid #f0efe8;padding-top:10px}
+.batch-prod-hdr{font-size:10px;font-weight:600;color:#888;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px;cursor:pointer;display:flex;align-items:center;gap:4px}
+.inv-sent-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer}
+.inv-sent-tag.done{background:#d1fae5;color:#065f46}
+.inv-sent-tag.pending{background:#fee2e2;color:#991b1b}
 </style>
 </head>
 <body>
@@ -134,6 +154,7 @@ a:hover{text-decoration:underline}
   <div class="tab" onclick="switchTab('po2',this)">🎮 PO2 Organique</div>
   <div class="tab" onclick="switchTab('weekly',this)">📈 Weekly Report</div>
   <div class="tab" onclick="switchTab('legend',this)">📖 Légende</div>
+  <div class="tab" onclick="switchTab('cca',this)">🏰 Castle Busters</div>
 </div>
 
 <div class="page">
@@ -258,6 +279,97 @@ a:hover{text-decoration:underline}
     </div>
   </div>
   <div id="wr-body"></div>
+</div>
+
+<!-- CASTLE BUSTERS -->
+<div class="panel" id="tab-cca">
+  <div class="cca-tabs">
+    <div class="cca-tab active" onclick="switchCcaTab('cca-creators',this)">👥 Créateurs</div>
+    <div class="cca-tab" onclick="switchCcaTab('cca-content',this)">🎬 Contenu</div>
+    <div class="cca-tab" onclick="switchCcaTab('cca-budget',this)">💰 Budget</div>
+  </div>
+
+  <!-- CCA CREATORS -->
+  <div class="cca-panel active" id="cca-creators">
+    <div class="stats" id="cca-cr-stats"></div>
+    <div class="fbar" style="margin-bottom:10px">
+      <input type="text" id="cca-cr-q" placeholder="Rechercher..." oninput="renderCcaCreators()">
+      <select id="cca-cr-tier" class="sel" onchange="renderCcaCreators()">
+        <option value="">Tous tiers</option>
+        <option>Ambassador Program</option>
+        <option>Creator Program</option>
+        <option>Paid Media &amp; Sponsorship</option>
+      </select>
+      <select id="cca-cr-cls" class="sel" onchange="renderCcaCreators()">
+        <option value="">Tous statuts</option>
+        <option value="contacted">Contacté</option>
+        <option value="negotiating">En négociation</option>
+        <option value="signed">Signé</option>
+        <option value="long-term">Long-terme</option>
+        <option value="out">Out</option>
+      </select>
+      <button class="btn btn-dark" style="font-size:11px" onclick="addCcaCreator()">+ Créateur</button>
+    </div>
+    <div id="cca-cr-body"></div>
+  </div>
+
+  <!-- CCA CONTENT -->
+  <div class="cca-panel" id="cca-content">
+    <div class="stats" id="cca-ct-stats"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="display:flex;gap:8px">
+        <select id="cca-ct-tier" class="sel" onchange="renderCcaContent()">
+          <option value="">Tous tiers</option>
+          <option>Ambassador Program</option>
+          <option>Creator Program</option>
+          <option>Paid Media &amp; Sponsorship</option>
+        </select>
+      </div>
+      <button class="btn btn-dark" style="font-size:11px" onclick="addCcaBatch()">+ New Batch</button>
+    </div>
+    <div id="cca-ct-body"></div>
+    <!-- CCA BATCH MODAL -->
+    <div id="cca-batch-modal" style="display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.45);z-index:500;align-items:center;justify-content:center">
+      <div style="background:#fff;border-radius:10px;padding:24px;width:500px;max-height:90vh;overflow-y:auto">
+        <div style="font-size:14px;font-weight:600;margin-bottom:14px">+ New Batch CCA</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div><label style="font-size:10px;color:#888;display:block;margin-bottom:3px">Créateur</label>
+            <input id="cca-nb-creator" list="cca-nb-list" class="inp" style="width:100%" placeholder="@handle">
+            <datalist id="cca-nb-list"></datalist></div>
+          <div><label style="font-size:10px;color:#888;display:block;margin-bottom:3px">Tier</label>
+            <select id="cca-nb-tier" class="sel" style="width:100%">
+              <option>Ambassador Program</option><option>Creator Program</option><option>Paid Media &amp; Sponsorship</option>
+            </select></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div><label style="font-size:10px;color:#888;display:block;margin-bottom:3px">Mois / dates</label>
+            <input id="cca-nb-dates" class="inp" style="width:100%" placeholder="ex: June 2026"></div>
+          <div><label style="font-size:10px;color:#888;display:block;margin-bottom:3px">Nb vidéos</label>
+            <input id="cca-nb-qty" type="number" class="inp" style="width:100%" placeholder="3" min="1"></div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px">
+          <div><label style="font-size:10px;color:#888;display:block;margin-bottom:3px">Prix total ($)</label>
+            <input id="cca-nb-price" type="number" class="inp" style="width:100%" placeholder="450"></div>
+          <div><label style="font-size:10px;color:#888;display:block;margin-bottom:3px">Méthode de paiement</label>
+            <input id="cca-nb-payment" class="inp" style="width:100%" placeholder="ex: Virement, PayPal..."></div>
+        </div>
+        <div style="margin-bottom:10px"><label style="font-size:10px;color:#888;display:block;margin-bottom:3px">Note / détail</label>
+          <input id="cca-nb-note" class="inp" style="width:100%" placeholder="Dispositif, instructions..."></div>
+        <div style="margin-bottom:14px"><label style="font-size:10px;color:#888;display:block;margin-bottom:3px">Lien contrat</label>
+          <input id="cca-nb-contract" class="inp" style="width:100%" placeholder="URL contrat (Tomorro...)"></div>
+        <div style="display:flex;gap:8px;justify-content:flex-end">
+          <button class="btn" onclick="hideCcaBatch()">Annuler</button>
+          <button class="btn btn-dark" onclick="submitCcaBatch()">Créer le batch</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CCA BUDGET -->
+  <div class="cca-panel" id="cca-budget">
+    <div class="stats" id="cca-bg-stats"></div>
+    <div id="cca-bg-body"></div>
+  </div>
 </div>
 
 <!-- LEGEND -->
@@ -1832,6 +1944,352 @@ function editWRInfRow(wid,arrName,idx,field,val){
   saveWR();
 }
 
+
+// ===================== CASTLE BUSTERS =====================
+var CCA_TIERS=['Ambassador Program','Creator Program','Paid Media & Sponsorship'];
+var CCA_CLS=['contacted','negotiating','signed','long-term','out'];
+var CCA_CLS_META={
+  'contacted':{label:'Contacté',badge:'b-blue'},
+  'negotiating':{label:'En négociation',badge:'b-amber'},
+  'signed':{label:'Signé',badge:'b-green'},
+  'long-term':{label:'Long-terme',badge:'b-purple'},
+  'out':{label:'Out',badge:'b-red'}
+};
+var _ccaExpanded={};
+
+function getCcaCreators(){return U.cca_creators||[];}
+function getCcaBatches(){return U.cca_batches||[];}
+function saveCca(){saveU();}
+
+function switchCcaTab(name,el){
+  document.querySelectorAll('.cca-tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.cca-panel').forEach(function(p){p.classList.remove('active');});
+  if(el) el.classList.add('active');
+  document.getElementById(name).classList.add('active');
+  if(name==='cca-creators') renderCcaCreators();
+  else if(name==='cca-content') renderCcaContent();
+  else if(name==='cca-budget') renderCcaBudget();
+}
+
+// ── CCA CREATORS ──────────────────────────────────────────
+function addCcaCreator(){
+  if(!U.cca_creators) U.cca_creators=[];
+  U.cca_creators.push({
+    id:'cc'+Date.now(),handle:'Nouveau créateur',url:'',followers:'',
+    tier:'Creator Program',ppv:150,drive:'',email:'',notes:'',
+    engagement:'',cls:'contacted'
+  });
+  saveCca(); renderCcaCreators();
+}
+function editCcaCr(id,field,val){
+  var c=getCcaCreators().find(function(x){return x.id===id;});
+  if(c){c[field]=val;saveCca();}
+}
+function delCcaCr(id){
+  if(!confirm('Supprimer ce créateur ?')) return;
+  U.cca_creators=(U.cca_creators||[]).filter(function(c){return c.id!==id;});
+  saveCca(); renderCcaCreators();
+}
+function renderCcaCreators(){
+  var q=(document.getElementById('cca-cr-q')||{}).value||'';
+  var filterTier=(document.getElementById('cca-cr-tier')||{}).value||'';
+  var filterCls=(document.getElementById('cca-cr-cls')||{}).value||'';
+  var all=getCcaCreators().filter(function(c){
+    if(q&&c.handle.toLowerCase().indexOf(q.toLowerCase())<0) return false;
+    if(filterTier&&c.tier!==filterTier) return false;
+    if(filterCls&&c.cls!==filterCls) return false;
+    return true;
+  });
+  // Stats
+  var total=getCcaCreators().length;
+  var signed=getCcaCreators().filter(function(c){return c.cls==='signed'||c.cls==='long-term';}).length;
+  document.getElementById('cca-cr-stats').innerHTML=
+    '<div class="sc"><div class="sc-l">Total</div><div class="sc-v">'+total+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Signés</div><div class="sc-v" style="color:#085041">'+signed+'</div></div>'+
+    CCA_TIERS.map(function(t){
+      var n=getCcaCreators().filter(function(c){return c.tier===t;}).length;
+      return '<div class="sc"><div class="sc-l" style="font-size:9px">'+t+'</div><div class="sc-v">'+n+'</div></div>';
+    }).join('');
+
+  if(!all.length){
+    document.getElementById('cca-cr-body').innerHTML='<p style="color:#aaa;font-size:12px;padding:20px 0">Aucun créateur. Clique sur "+ Créateur".</p>';
+    return;
+  }
+  var html='<div class="tw"><table><thead><tr>'+
+    '<th>Handle</th><th>URL</th><th>Followers</th><th>Tier</th>'+
+    '<th>$/vidéo</th><th>Engagement</th><th>Drive</th><th>Email</th><th>Notes</th><th>Statut</th><th></th>'+
+    '</tr></thead><tbody>';
+  all.forEach(function(c){
+    var meta=CCA_CLS_META[c.cls]||{label:c.cls,badge:'b-gray'};
+    html+='<tr>'+
+      '<td><input class="inp" style="width:110px" value="'+esc(c.handle)+'" oninput="editCcaCr(\''+c.id+'\',\'handle\',this.value)"></td>'+
+      '<td>'+(c.url?'<a href="'+esc(c.url)+'" target="_blank" style="font-size:10px;margin-right:3px;color:#185fa5">↗</a>':'')+
+        '<input class="inp" style="width:90px;font-size:10px" placeholder="URL TikTok/IG" value="'+esc(c.url||'')+'" oninput="editCcaCr(\''+c.id+'\',\'url\',this.value)"></td>'+
+      '<td><input class="inp" style="width:50px" placeholder="15K" value="'+esc(c.followers||'')+'" oninput="editCcaCr(\''+c.id+'\',\'followers\',this.value)"></td>'+
+      '<td><select class="sel" style="font-size:10px" onchange="editCcaCr(\''+c.id+'\',\'tier\',this.value)">'+
+        CCA_TIERS.map(function(t){return '<option value="'+t+'"'+(t===c.tier?' selected':'')+'>'+t+'</option>';}).join('')+
+        '</select></td>'+
+      '<td><input class="inp" type="number" style="width:55px" placeholder="150" value="'+(c.ppv||'')+'" oninput="editCcaCr(\''+c.id+'\',\'ppv\',parseInt(this.value)||0)"></td>'+
+      '<td><input class="inp" style="width:60px" placeholder="3.2%" value="'+esc(c.engagement||'')+'" oninput="editCcaCr(\''+c.id+'\',\'engagement\',this.value)"></td>'+
+      '<td>'+(c.drive?'<a href="'+esc(c.drive)+'" target="_blank" style="font-size:10px;margin-right:3px;color:#185fa5">↗</a>':'')+
+        '<input class="inp" style="width:75px;font-size:10px" placeholder="Drive URL" value="'+esc(c.drive||'')+'" oninput="editCcaCr(\''+c.id+'\',\'drive\',this.value)"></td>'+
+      '<td><input class="inp" style="width:120px;font-size:10px" placeholder="email" value="'+esc(c.email||'')+'" oninput="editCcaCr(\''+c.id+'\',\'email\',this.value)"></td>'+
+      '<td><input class="inp" style="width:110px;font-size:10px" placeholder="Notes..." value="'+esc(c.notes||'')+'" oninput="editCcaCr(\''+c.id+'\',\'notes\',this.value)"></td>'+
+      '<td><select class="sel" style="font-size:10px" onchange="editCcaCr(\''+c.id+'\',\'cls\',this.value)">'+
+        CCA_CLS.map(function(s){var m=CCA_CLS_META[s];return '<option value="'+s+'"'+(s===c.cls?' selected':'')+'>'+m.label+'</option>';}).join('')+
+        '</select></td>'+
+      '<td><button class="del" onclick="delCcaCr(\''+c.id+'\')" title="Supprimer">×</button></td>'+
+      '</tr>';
+  });
+  html+='</tbody></table></div>';
+  document.getElementById('cca-cr-body').innerHTML=html;
+}
+
+// ── CCA CONTENT ───────────────────────────────────────────
+function addCcaBatch(){
+  var dl=document.getElementById('cca-nb-list');
+  if(dl){
+    dl.innerHTML='';
+    getCcaCreators().filter(function(c){return c.cls==='signed'||c.cls==='long-term';}).forEach(function(c){
+      var opt=document.createElement('option'); opt.value='@'+c.handle; dl.appendChild(opt);
+    });
+  }
+  ['cca-nb-creator','cca-nb-dates','cca-nb-note','cca-nb-contract','cca-nb-payment'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  document.getElementById('cca-nb-qty').value='3';
+  document.getElementById('cca-nb-price').value='';
+  document.getElementById('cca-batch-modal').style.display='flex';
+}
+function hideCcaBatch(){document.getElementById('cca-batch-modal').style.display='none';}
+function submitCcaBatch(){
+  var handle=(document.getElementById('cca-nb-creator').value||'').replace(/^@/,'').trim();
+  if(!handle){alert('Saisis un créateur');return;}
+  var cr=getCcaCreators().find(function(c){return c.handle===handle;});
+  var qty=parseInt(document.getElementById('cca-nb-qty').value)||1;
+  var batch={
+    id:'cb'+Date.now(),
+    creator:handle,
+    cid:cr?cr.id:'',
+    tier:(document.getElementById('cca-nb-tier').value)||'Creator Program',
+    dates:(document.getElementById('cca-nb-dates').value||'').trim(),
+    qty:qty,
+    price:parseInt(document.getElementById('cca-nb-price').value)||0,
+    note:(document.getElementById('cca-nb-note').value||'').trim(),
+    contractUrl:(document.getElementById('cca-nb-contract').value||'').trim(),
+    payment:(document.getElementById('cca-nb-payment').value||'').trim(),
+    status:'En production',
+    driveUrl:cr?cr.drive||'':'',
+    invoiceSent:false,
+    items:Array.from({length:qty},function(){return {inf:'',concept:'',vgp:'',social:'',received:false};})
+  };
+  if(!U.cca_batches) U.cca_batches=[];
+  U.cca_batches.push(batch);
+  saveCca(); hideCcaBatch(); renderCcaContent();
+  toast('Batch CCA créé — '+qty+' vidéos pour @'+handle);
+}
+function editCcaBatch(id,field,val){
+  var b=getCcaBatches().find(function(x){return x.id===id;});
+  if(b){b[field]=val;saveCca();}
+}
+function editCcaItem(bid,idx,field,val){
+  var b=getCcaBatches().find(function(x){return x.id===bid;});
+  if(b&&b.items[idx]){b.items[idx][field]=val;saveCca();}
+}
+function delCcaBatch(id){
+  if(!confirm('Supprimer ce batch ?')) return;
+  U.cca_batches=(U.cca_batches||[]).filter(function(b){return b.id!==id;});
+  saveCca(); renderCcaContent(); toast('Batch supprimé');
+}
+
+function renderCcaContent(){
+  var batches=getCcaBatches();
+  var filterTier=(document.getElementById('cca-ct-tier')||{}).value||'';
+
+  // Stats
+  var totalVids=batches.reduce(function(a,b){return a+b.qty;},0);
+  var totalRec=batches.reduce(function(a,b){return a+b.items.filter(function(i){return i.received;}).length;},0);
+  var totalDone=batches.filter(function(b){return b.items.every(function(i){return i.received;});}).length;
+  var totalBudget=batches.reduce(function(a,b){return a+b.price;},0);
+  document.getElementById('cca-ct-stats').innerHTML=
+    '<div class="sc"><div class="sc-l">Budget total</div><div class="sc-v" style="color:#633806">$'+fmt(totalBudget)+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Vidéos commandées</div><div class="sc-v">'+totalVids+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Vidéos reçues</div><div class="sc-v" style="color:#085041">'+totalRec+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Batches terminés</div><div class="sc-v">'+totalDone+'</div></div>';
+
+  var filtered=filterTier?batches.filter(function(b){return b.tier===filterTier;}):batches;
+  if(!filtered.length){
+    document.getElementById('cca-ct-body').innerHTML='<p style="color:#aaa;font-size:12px;padding:20px 0">Aucun batch. Clique sur "+ New Batch".</p>';
+    return;
+  }
+
+  var TIER_CLASSES={'Ambassador Program':'tier-amb','Creator Program':'tier-cre','Paid Media & Sponsorship':'tier-paid'};
+  var html='';
+  CCA_TIERS.forEach(function(tier){
+    var rows=filtered.filter(function(b){return b.tier===tier;});
+    if(!rows.length) return;
+    html+='<div class="tier-section"><div class="tier-hdr">'+
+      '<span class="tier-pill '+(TIER_CLASSES[tier]||'')+'" >'+tier+'</span>'+
+      '<span style="color:#bbb">'+rows.length+' batch'+(rows.length>1?'es':'')+'</span></div>';
+    rows.forEach(function(b){
+      var cr=getCcaCreators().find(function(c){return c.id===b.cid||c.handle===b.creator;});
+      var url=cr?cr.url||'':'';
+      var recCount=b.items.filter(function(i){return i.received;}).length;
+      var allDone=recCount===b.qty;
+      var expOpen=_ccaExpanded[b.id];
+      html+='<div class="batch-card" data-bid="'+b.id+'">';
+      html+='<div class="batch-card-hdr">'+
+        '<div>'+
+          (url?'<a class="batch-creator" href="'+esc(url)+'" target="_blank">@'+esc(b.creator)+'</a>':'<span class="batch-creator" style="color:#185fa5">@'+esc(b.creator)+'</span>')+
+          '&nbsp;&nbsp;'+
+          '<span class="badge '+(allDone?'b-green':recCount>0?'b-amber':'b-gray')+'">'+
+            (allDone?'Reçu ✓':recCount>0?recCount+'/'+b.qty+' reçus':'En production')+'</span>'+
+        '</div>'+
+        '<div style="display:flex;align-items:center;gap:8px">'+
+          '<span style="font-size:16px;font-weight:700;color:#633806">$'+fmt(b.price)+'</span>'+
+          '<button class="del" data-del-batch="'+b.id+'" title="Supprimer">×</button>'+
+        '</div>'+
+      '</div>';
+      html+='<div class="batch-meta">'+
+        (b.dates?'<span>📅 '+esc(b.dates)+'</span>':'')+
+        '<span>🎬 '+b.qty+' vidéo'+(b.qty>1?'s':'')+'</span>'+
+        (b.payment?'<span>💳 '+esc(b.payment)+'</span>':'')+
+        (b.contractUrl?'<a href="'+esc(b.contractUrl)+'" target="_blank" style="font-size:11px;color:#185fa5;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:2px 7px">📄 Contrat ↗</a>':'')+
+        (cr&&cr.drive?'<a href="'+esc(cr.drive)+'" target="_blank" style="font-size:11px;color:#185fa5;background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:2px 7px">📁 Drive ↗</a>':'')+
+      '</div>';
+      // Status + note row
+      html+='<div style="display:flex;gap:10px;align-items:center;margin-bottom:8px;flex-wrap:wrap">'+
+        '<select class="sel" style="font-size:10px" data-field="status" data-bid="'+b.id+'">'+
+          ['En production','En cours','Reçu ✓','Rework','Annulé'].map(function(s){
+            return '<option'+(s===b.status?' selected':'')+'>'+s+'</option>';
+          }).join('')+
+        '</select>'+
+        (b.note?'<span style="font-size:11px;color:#888;font-style:italic">'+esc(b.note)+'</span>':'')+
+        // Invoice tag
+        '<label class="inv-sent-tag '+(b.invoiceSent?'done':'pending')+'" style="margin-left:auto">'+
+          '<input type="checkbox" class="cca-inv-chk" data-bid="'+b.id+'"'+(b.invoiceSent?' checked':'')+' style="margin-right:4px">'+
+          (b.invoiceSent?'✓ Invoice Sent to Finance':'Invoice Sent to Finance ?')+
+        '</label>'+
+      '</div>';
+      // Production tracking (expandable)
+      html+='<div class="batch-prod">'+
+        '<div class="batch-prod-hdr" data-toggle-prod="'+b.id+'">'+
+          '<span>'+(expOpen?'▼':'▶')+'</span> Tracking production ('+b.qty+' vidéo'+(b.qty>1?'s':'')+')</div>';
+      if(expOpen){
+        html+='<div class="tw" style="margin-top:6px"><table style="width:100%"><thead><tr>'+
+          '<th>#</th><th>INF Code</th><th>Concept</th><th>Lien VGP</th><th>Social Media</th><th style="text-align:center">Reçu</th>'+
+          '</tr></thead><tbody>';
+        b.items.forEach(function(it,i){
+          html+='<tr>'+
+            '<td style="color:#aaa;font-weight:600;width:30px">'+(i+1)+'</td>'+
+            '<td><input class="inp" placeholder="INF code" value="'+esc(it.inf||'')+'" data-bid="'+b.id+'" data-idx="'+i+'" data-ifield="inf" style="width:90px;font-family:monospace;font-size:11px"></td>'+
+            '<td><input class="inp" placeholder="Concept" value="'+esc(it.concept||'')+'" data-bid="'+b.id+'" data-idx="'+i+'" data-ifield="concept" style="width:130px"></td>'+
+            '<td>'+(it.vgp?'<a href="'+esc(it.vgp)+'" target="_blank" style="font-size:10px;margin-right:3px">↗</a>':'')+
+              '<input class="inp" placeholder="Lien VGP" value="'+esc(it.vgp||'')+'" data-bid="'+b.id+'" data-idx="'+i+'" data-ifield="vgp" style="width:160px;font-size:10px"></td>'+
+            '<td>'+(it.social?'<a href="'+esc(it.social)+'" target="_blank" style="font-size:10px;margin-right:3px">↗</a>':'')+
+              '<input class="inp" placeholder="Lien social" value="'+esc(it.social||'')+'" data-bid="'+b.id+'" data-idx="'+i+'" data-ifield="social" style="width:140px;font-size:10px"></td>'+
+            '<td style="text-align:center"><input type="checkbox" class="chk" data-bid="'+b.id+'" data-idx="'+i+'" data-ifield="received"'+(it.received?' checked':'')+'></td>'+
+            '</tr>';
+        });
+        html+='</tbody></table></div>';
+      }
+      html+='</div>';
+      html+='</div>'; // batch-card
+    });
+    html+='</div>'; // tier-section
+  });
+
+  document.getElementById('cca-ct-body').innerHTML=html;
+
+  // Event delegation
+  var body=document.getElementById('cca-ct-body');
+  body.addEventListener('change',function(e){
+    var t=e.target, bid=t.dataset.bid;
+    if(!bid) return;
+    if(t.dataset.field==='status') editCcaBatch(bid,'status',t.value);
+    if(t.classList.contains('cca-inv-chk')){editCcaBatch(bid,'invoiceSent',t.checked);renderCcaContent();}
+    if(t.dataset.ifield){
+      var val=t.type==='checkbox'?t.checked:t.value;
+      editCcaItem(bid,parseInt(t.dataset.idx),t.dataset.ifield,val);
+    }
+  });
+  body.addEventListener('click',function(e){
+    var t=e.target;
+    if(t.dataset.delBatch){delCcaBatch(t.dataset.delBatch);return;}
+    var tog=t.closest('[data-toggle-prod]');
+    if(tog){var bid=tog.dataset.toggleProd;_ccaExpanded[bid]=!_ccaExpanded[bid];renderCcaContent();}
+  });
+  // fix dataset for del button
+  body.querySelectorAll('[data-del-batch]').forEach(function(btn){
+    btn.onclick=function(){delCcaBatch(this.dataset.delBatch);};
+  });
+}
+
+// ── CCA BUDGET ────────────────────────────────────────────
+function renderCcaBudget(){
+  var batches=getCcaBatches();
+  var totalBudget=batches.reduce(function(a,b){return a+b.price;},0);
+  var totalVids=batches.reduce(function(a,b){return a+b.qty;},0);
+  var totalRec=batches.reduce(function(a,b){return a+b.items.filter(function(i){return i.received;}).length;},0);
+  var totalInvoiced=batches.filter(function(b){return b.invoiceSent;}).reduce(function(a,b){return a+b.price;},0);
+
+  document.getElementById('cca-bg-stats').innerHTML=
+    '<div class="sc amber"><div class="sc-l">Budget total</div><div class="sc-v">$'+fmt(totalBudget)+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Vidéos commandées</div><div class="sc-v">'+totalVids+'</div></div>'+
+    '<div class="sc"><div class="sc-l">Vidéos reçues</div><div class="sc-v" style="color:#085041">'+totalRec+'</div></div>'+
+    '<div class="sc" style="background:#e1f5ee"><div class="sc-l" style="color:#085041">Invoice envoyée</div><div class="sc-v" style="color:#085041">$'+fmt(totalInvoiced)+'</div></div>';
+
+  var TIER_CLASSES={'Ambassador Program':'tier-amb','Creator Program':'tier-cre','Paid Media & Sponsorship':'tier-paid'};
+  var html='';
+  CCA_TIERS.forEach(function(tier){
+    var rows=batches.filter(function(b){return b.tier===tier;});
+    var tBudget=rows.reduce(function(a,b){return a+b.price;},0);
+    var tVids=rows.reduce(function(a,b){return a+b.qty;},0);
+    var tInv=rows.filter(function(b){return b.invoiceSent;}).reduce(function(a,b){return a+b.price;},0);
+    html+='<div style="background:#fff;border:1px solid #e0dfd8;border-radius:10px;padding:18px;margin-bottom:14px">'+
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">'+
+        '<div style="display:flex;align-items:center;gap:10px">'+
+          '<span class="tier-pill '+(TIER_CLASSES[tier]||'')+'" style="font-size:11px;font-weight:700">'+tier+'</span>'+
+          '<span style="font-size:11px;color:#888">'+rows.length+' batch'+(rows.length>1?'es':'')+'</span>'+
+        '</div>'+
+        '<span style="font-size:18px;font-weight:700;color:#633806">$'+fmt(tBudget)+'</span>'+
+      '</div>'+
+      '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">'+
+        '<div class="sc"><div class="sc-l">Vidéos</div><div class="sc-v">'+tVids+'</div></div>'+
+        '<div class="sc"><div class="sc-l">Avg $/vidéo</div><div class="sc-v">'+(tVids>0?'$'+fmt(Math.round(tBudget/tVids)):'—')+'</div></div>'+
+        '<div class="sc" style="background:#e1f5ee"><div class="sc-l" style="color:#085041">Invoicé</div><div class="sc-v" style="color:#085041">$'+fmt(tInv)+'</div></div>'+
+      '</div>';
+    if(rows.length){
+      html+='<div class="tw"><table style="width:100%"><thead><tr>'+
+        '<th>Créateur</th><th>Dates</th><th>Vidéos</th><th>Budget</th><th>Statut</th><th>Invoice</th><th>Paiement</th>'+
+        '</tr></thead><tbody>';
+      rows.forEach(function(b){
+        html+='<tr>'+
+          '<td style="font-weight:500">@'+esc(b.creator)+'</td>'+
+          '<td style="color:#888;font-size:11px">'+esc(b.dates||'—')+'</td>'+
+          '<td>'+b.qty+'</td>'+
+          '<td style="font-weight:600">$'+fmt(b.price)+'</td>'+
+          '<td><span class="badge '+(b.status==='Reçu ✓'?'b-green':b.status==='En cours'?'b-amber':'b-gray')+'">'+esc(b.status||'—')+'</span></td>'+
+          '<td><span class="badge '+(b.invoiceSent?'b-green':'b-red')+'">'+(b.invoiceSent?'✓ Sent':'Pending')+'</span></td>'+
+          '<td style="font-size:11px;color:#888">'+esc(b.payment||'—')+'</td>'+
+          '</tr>';
+      });
+      html+='</tbody></table></div>';
+    } else {
+      html+='<p style="color:#aaa;font-size:12px">Aucun batch pour ce tier.</p>';
+    }
+    html+='</div>';
+  });
+
+  document.getElementById('cca-bg-body').innerHTML=html||'<p style="color:#aaa;font-size:12px;padding:20px 0">Aucune donnée.</p>';
+}
+
+// Hook renderCcaCreators/Content/Budget into switchTab
+var _origSwitchTab=switchTab;
+switchTab=function(name,el){
+  _origSwitchTab(name,el);
+  if(name==='cca'){renderCcaCreators();}
+};
 
 // ===================== INIT =====================
 loadU();
