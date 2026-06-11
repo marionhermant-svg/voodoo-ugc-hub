@@ -132,6 +132,30 @@ a:hover{text-decoration:underline}
 .inv-sent-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:5px;font-size:10px;font-weight:600;cursor:pointer}
 .inv-sent-tag.done{background:#d1fae5;color:#065f46}
 .inv-sent-tag.pending{background:#fee2e2;color:#991b1b}
+
+/* ── Section header colors per status ── */
+.cr-section-hdr.hdr-long-term{background:#fef3c7;border-color:#f59e0b;color:#92400e}
+.cr-section-hdr.hdr-signed{background:#d1fae5;border-color:#10b981;color:#065f46}
+.cr-section-hdr.hdr-in-negotiation{background:#fff7ed;border-color:#f97316;color:#9a3412}
+.cr-section-hdr.hdr-contacted{background:#dbeafe;border-color:#3b82f6;color:#1e3a8a}
+.cr-section-hdr.hdr-to-contact{background:#f0f9ff;border-color:#7dd3fc;color:#0c4a6e}
+.cr-section-hdr.hdr-out{background:#fee2e2;border-color:#f87171;color:#991b1b}
+.cr-section-hdr.hdr-churned{background:#f3f4f6;border-color:#9ca3af;color:#4b5563}
+/* ── Platform badge ── */
+.plt{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:5px;font-size:11px;font-weight:700;color:#fff;cursor:pointer;flex-shrink:0}
+.plt-tiktok{background:#010101}
+.plt-instagram{background:linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7)}
+.plt-youtube{background:#ff0000}
+.plt-twitch{background:#9146ff}
+.plt-other{background:#9ca3af}
+/* ── Status badge select colors ── */
+select.sel-signed{background:#d1fae5;color:#065f46;border-color:#10b981}
+select.sel-long-term{background:#fef3c7;color:#92400e;border-color:#f59e0b}
+select.sel-in-negotiation{background:#fff7ed;color:#9a3412;border-color:#f97316}
+select.sel-contacted{background:#dbeafe;color:#1e3a8a;border-color:#3b82f6}
+select.sel-to-contact{background:#f0f9ff;color:#0c4a6e;border-color:#7dd3fc}
+select.sel-out{background:#fee2e2;color:#991b1b;border-color:#f87171}
+select.sel-churned{background:#f3f4f6;color:#4b5563;border-color:#9ca3af}
 </style>
 </head>
 <body>
@@ -591,6 +615,29 @@ function fmtP(n){return n>0?'$'+fmt(n):'—';}
 function esc(s){return (s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
 function gtags(games){return (games||[]).map(function(g){return '<span class="gtag g-'+g+'">'+g+'</span>';}).join('');}
 
+var PLT_LABELS={tiktok:'TikTok',instagram:'IG',youtube:'YT',twitch:'TW',other:'?'};
+function detectPlatform(url,stored){
+  if(stored&&stored!=='other'&&stored!=='') return stored;
+  if(!url) return 'other';
+  var u=url.toLowerCase();
+  if(u.indexOf('tiktok')>=0) return 'tiktok';
+  if(u.indexOf('instagram')>=0||u.indexOf('ig.com')>=0) return 'instagram';
+  if(u.indexOf('youtube')>=0||u.indexOf('youtu.be')>=0) return 'youtube';
+  if(u.indexOf('twitch')>=0) return 'twitch';
+  return 'other';
+}
+function pltBadge(plt,id,isMain){
+  var lbl=PLT_LABELS[plt]||'?';
+  var fn=isMain?'editCr':'editCcaCr';
+  return '<select class="sel plt plt-'+plt+'" style="width:34px;padding:0 2px;font-size:9px;font-weight:700;color:#fff;height:22px;cursor:pointer;border:none;appearance:none;text-align:center" '+
+    'onchange="'+fn+'(\''+id+'\',\'platform\',this.value);renderCreators()" '+
+    'title="Plateforme">'+
+    ['tiktok','instagram','youtube','twitch','other'].map(function(p){
+      return '<option value="'+p+'"'+(p===plt?' selected':'')+'>'+PLT_LABELS[p]+'</option>';
+    }).join('')+
+    '</select>';
+}
+
 var CLS_META={
   'to-contact':{label:'À contacter',badge:'b-blue',icon:'📋'},
   'contacted':{label:'Contactés',badge:'b-amber',icon:'📨'},
@@ -726,13 +773,13 @@ function renderCreators(){
     var meta=CLS_META[cls]||{label:cls,badge:'b-gray',icon:''};
     var open=_sectionOpen[cls]!==false;
     html+='<div class="cr-section" id="cs-'+cls+'">';
-    html+='<div class="cr-section-hdr" onclick="toggleSection(\''+cls+'\')">';
+    html+='<div class="cr-section-hdr hdr-'+cls+'" onclick="toggleSection(\''+cls+'\')">';
     html+='<span class="cr-section-toggle'+(open?' open':'')+'">▶</span>';
     html+='<span>'+meta.icon+' '+meta.label+'</span>';
     html+='<span class="sec-count">'+rows.length+'</span>';
     html+='</div>';
     if(open){
-      html+='<div class="tw"><table><thead><tr><th></th><th>Handle</th><th>URL</th><th>Followers</th><th>Jeux</th><th>$/vidéo</th><th>Drive</th><th>Email</th><th>Notes</th><th>Statut</th><th></th></tr></thead><tbody id="cb-'+cls+'">';
+      html+='<div class="tw"><table><thead><tr><th></th><th style="width:30px">Plt</th><th>Handle</th><th>URL</th><th>Followers</th><th>Jeux</th><th>$/vidéo</th><th>Drive</th><th>Email</th><th>Notes</th><th>Statut</th><th></th></tr></thead><tbody id="cb-'+cls+'">';
       rows.forEach(function(c){
         var timer=contactBadge(c);
         var star='<span class="star'+(c.isLT?'':' off')+'" onclick="toggleLT(\''+c.id+'\',event)" title="Long terme">★</span>';
@@ -746,6 +793,7 @@ function renderCreators(){
           ' ondrop="drop(event,\''+cls+'\')"'+
           ' style="cursor:grab">'+
           '<td style="width:20px">'+star+'</td>'+
+          '<td style="width:30px;text-align:center">'+pltBadge(detectPlatform(c.url,c.platform),c.id,true)+'</td>'+
           '<td><input class="inp" style="width:110px" placeholder="@handle" value="'+esc(c.handle||'')+'" oninput="editCr(\''+c.id+'\',\'handle\',this.value)"> '+timer+'</td>'+
           '<td>'+(c.url?'<a href="'+esc(c.url)+'" target="_blank" style="font-size:10px;margin-right:3px;color:#185fa5" title="Ouvrir TikTok">↗</a>':'')+
           '<input class="inp" style="width:95px;font-size:10px" placeholder="URL TikTok/IG" value="'+esc(c.url||'')+'" oninput="editCr(\''+c.id+'\',\'url\',this.value)"></td>'+
@@ -756,7 +804,7 @@ function renderCreators(){
           '<td><input class="inp" style="width:130px;font-size:10px" placeholder="email..." value="'+esc(c.email||'')+'" oninput="editCr(\''+c.id+'\',\'email\',this.value)"></td>'+
           '<td><input class="inp" placeholder="Notes..." value="'+esc(c.note||'')+'" oninput="editCr(\''+c.id+'\',\'note\',this.value)" style="width:100px"></td>'+
           '<td>'+
-            '<select class="sel" onchange="changeClsCr(\''+c.id+'\',this.value)" style="font-size:10px">'+
+            '<select class="sel sel-'+c.cls+'" onchange="changeClsCr(\''+c.id+'\',this.value)" style="font-size:10px">'+
             CLS_ORDER.map(function(k){return '<option value="'+k+'"'+(c.cls===k?' selected':'')+'>'+CLS_META[k].icon+' '+CLS_META[k].label+'</option>';}).join('')+
             '</select>'+
           '</td>'+
@@ -2011,38 +2059,71 @@ function renderCcaCreators(){
       return '<div class="sc"><div class="sc-l" style="font-size:9px">'+t+'</div><div class="sc-v">'+n+'</div></div>';
     }).join('');
 
-  if(!all.length){
+
+  var CCA_SECTION_COLORS={
+    'contacted':'#dbeafe','negotiating':'#fff7ed','signed':'#d1fae5',
+    'long-term':'#fef3c7','out':'#fee2e2'
+  };
+  var CCA_SECTION_BORDER={
+    'contacted':'#3b82f6','negotiating':'#f97316','signed':'#10b981',
+    'long-term':'#f59e0b','out':'#f87171'
+  };
+  var CCA_SECTION_TEXT={
+    'contacted':'#1e3a8a','negotiating':'#9a3412','signed':'#065f46',
+    'long-term':'#92400e','out':'#991b1b'
+  };
+
+  if(!getCcaCreators().length){
     document.getElementById('cca-cr-body').innerHTML='<p style="color:#aaa;font-size:12px;padding:20px 0">Aucun créateur. Clique sur "+ Créateur".</p>';
     return;
   }
-  var html='<div class="tw"><table><thead><tr>'+
-    '<th>Handle</th><th>URL</th><th>Followers</th><th>Tier</th>'+
-    '<th>$/vidéo</th><th>Engagement</th><th>Drive</th><th>Email</th><th>Notes</th><th>Statut</th><th></th>'+
-    '</tr></thead><tbody>';
-  all.forEach(function(c){
-    var meta=CCA_CLS_META[c.cls]||{label:c.cls,badge:'b-gray'};
-    html+='<tr>'+
-      '<td><input class="inp" style="width:110px" value="'+esc(c.handle)+'" oninput="editCcaCr(\''+c.id+'\',\'handle\',this.value)"></td>'+
-      '<td>'+(c.url?'<a href="'+esc(c.url)+'" target="_blank" style="font-size:10px;margin-right:3px;color:#185fa5">↗</a>':'')+
-        '<input class="inp" style="width:90px;font-size:10px" placeholder="URL TikTok/IG" value="'+esc(c.url||'')+'" oninput="editCcaCr(\''+c.id+'\',\'url\',this.value)"></td>'+
-      '<td><input class="inp" style="width:50px" placeholder="15K" value="'+esc(c.followers||'')+'" oninput="editCcaCr(\''+c.id+'\',\'followers\',this.value)"></td>'+
-      '<td><select class="sel" style="font-size:10px" onchange="editCcaCr(\''+c.id+'\',\'tier\',this.value)">'+
-        CCA_TIERS.map(function(t){return '<option value="'+t+'"'+(t===c.tier?' selected':'')+'>'+t+'</option>';}).join('')+
-        '</select></td>'+
-      '<td><input class="inp" type="number" style="width:55px" placeholder="150" value="'+(c.ppv||'')+'" oninput="editCcaCr(\''+c.id+'\',\'ppv\',parseInt(this.value)||0)"></td>'+
-      '<td><input class="inp" style="width:60px" placeholder="3.2%" value="'+esc(c.engagement||'')+'" oninput="editCcaCr(\''+c.id+'\',\'engagement\',this.value)"></td>'+
-      '<td>'+(c.drive?'<a href="'+esc(c.drive)+'" target="_blank" style="font-size:10px;margin-right:3px;color:#185fa5">↗</a>':'')+
-        '<input class="inp" style="width:75px;font-size:10px" placeholder="Drive URL" value="'+esc(c.drive||'')+'" oninput="editCcaCr(\''+c.id+'\',\'drive\',this.value)"></td>'+
-      '<td><input class="inp" style="width:120px;font-size:10px" placeholder="email" value="'+esc(c.email||'')+'" oninput="editCcaCr(\''+c.id+'\',\'email\',this.value)"></td>'+
-      '<td><input class="inp" style="width:110px;font-size:10px" placeholder="Notes..." value="'+esc(c.notes||'')+'" oninput="editCcaCr(\''+c.id+'\',\'notes\',this.value)"></td>'+
-      '<td><select class="sel" style="font-size:10px" onchange="editCcaCr(\''+c.id+'\',\'cls\',this.value)">'+
-        CCA_CLS.map(function(s){var m=CCA_CLS_META[s];return '<option value="'+s+'"'+(s===c.cls?' selected':'')+'>'+m.label+'</option>';}).join('')+
-        '</select></td>'+
-      '<td><button class="del" onclick="delCcaCr(\''+c.id+'\')" title="Supprimer">×</button></td>'+
-      '</tr>';
+
+  var html='';
+  CCA_CLS.forEach(function(cls){
+    var rows=all.filter(function(c){return c.cls===cls;});
+    if(!rows.length) return;
+    var meta=CCA_CLS_META[cls]||{label:cls};
+    var bg=CCA_SECTION_COLORS[cls]||'#f8f7f4';
+    var bc=CCA_SECTION_BORDER[cls]||'#e0dfd8';
+    var tc=CCA_SECTION_TEXT[cls]||'#374151';
+    html+='<div style="margin-bottom:16px">'+
+      '<div style="display:flex;align-items:center;gap:8px;padding:6px 10px;background:'+bg+';border:1px solid '+bc+';border-radius:6px;cursor:pointer;margin-bottom:6px;color:'+tc+'" '+
+        'onclick="this.nextElementSibling.style.display=this.nextElementSibling.style.display===\'none\'?\'block\':\'none\'">'+
+        '<span style="font-size:12px;font-weight:700">'+meta.label+'</span>'+
+        '<span style="background:rgba(0,0,0,.1);border-radius:20px;padding:1px 7px;font-size:10px">'+rows.length+'</span>'+
+      '</div>'+
+      '<div>';
+    html+='<div class="tw"><table style="width:100%"><thead><tr>'+
+      '<th style="width:30px">Plt</th><th>Handle</th><th>URL</th><th>Followers</th><th>Tier</th>'+
+      '<th>$/vidéo</th><th>Engagement</th><th>Drive</th><th>Email</th><th>Notes</th><th>Statut</th><th></th>'+
+      '</tr></thead><tbody>';
+    rows.forEach(function(c){
+      var plt=detectPlatform(c.url,c.platform);
+      var TIER_COLORS={'Ambassador Program':'#fef3c7','Creator Program':'#dbeafe','Paid Media & Sponsorship':'#f3e8ff'};
+      html+='<tr data-ccr="'+c.id+'">'+
+        '<td style="text-align:center">'+pltBadge(plt,c.id,false)+'</td>'+
+        '<td><input class="inp cca-cr-inp" data-ccr="'+c.id+'" data-field="handle" style="width:110px" value="'+esc(c.handle)+'"></td>'+
+        '<td>'+(c.url?'<a href="'+esc(c.url)+'" target="_blank" style="font-size:10px;margin-right:3px;color:#185fa5">↗</a>':'')+
+          '<input class="inp cca-cr-inp" data-ccr="'+c.id+'" data-field="url" style="width:90px;font-size:10px" placeholder="URL" value="'+esc(c.url||'')+'"></td>'+
+        '<td><input class="inp cca-cr-inp" data-ccr="'+c.id+'" data-field="followers" style="width:50px" placeholder="15K" value="'+esc(c.followers||'')+'"></td>'+
+        '<td><select class="sel cca-cr-sel" data-ccr="'+c.id+'" data-field="tier" style="font-size:10px;background:'+(TIER_COLORS[c.tier]||'#f8f7f4')+'">'+
+          CCA_TIERS.map(function(t){return '<option value="'+t+'"'+(t===c.tier?' selected':'')+'>'+t+'</option>';}).join('')+'</select></td>'+
+        '<td><input class="inp cca-cr-inp" data-ccr="'+c.id+'" data-field="ppv" data-num="1" type="number" style="width:55px" value="'+(c.ppv||'')+'"></td>'+
+        '<td><input class="inp cca-cr-inp" data-ccr="'+c.id+'" data-field="engagement" style="width:60px" placeholder="3.2%" value="'+esc(c.engagement||'')+'"></td>'+
+        '<td>'+(c.drive?'<a href="'+esc(c.drive)+'" target="_blank" style="font-size:10px;margin-right:3px;color:#185fa5">↗</a>':'')+
+          '<input class="inp cca-cr-inp" data-ccr="'+c.id+'" data-field="drive" style="width:75px;font-size:10px" placeholder="Drive URL" value="'+esc(c.drive||'')+'"></td>'+
+        '<td><input class="inp cca-cr-inp" data-ccr="'+c.id+'" data-field="email" style="width:120px;font-size:10px" placeholder="email" value="'+esc(c.email||'')+'"></td>'+
+        '<td><input class="inp cca-cr-inp" data-ccr="'+c.id+'" data-field="notes" style="width:110px;font-size:10px" placeholder="Notes..." value="'+esc(c.notes||'')+'"></td>'+
+        '<td><select class="sel cca-cr-sel" data-ccr="'+c.id+'" data-field="cls" style="font-size:10px;background:'+bg+';color:'+tc+'">'+
+          CCA_CLS.map(function(s){var m2=CCA_CLS_META[s];return '<option value="'+s+'"'+(s===c.cls?' selected':'')+'>'+m2.label+'</option>';}).join('')+'</select></td>'+
+        '<td><button class="del cca-del-cr" data-ccr="'+c.id+'" title="Supprimer">×</button></td>'+
+        '</tr>';
+    });
+    html+='</tbody></table></div></div></div>';
   });
-  html+='</tbody></table></div>';
+  if(!html) html='<p style="color:#aaa;font-size:12px;padding:20px 0">Aucun résultat.</p>';
   document.getElementById('cca-cr-body').innerHTML=html;
+
 }
 
 // ── CCA CONTENT ───────────────────────────────────────────
