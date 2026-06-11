@@ -874,6 +874,14 @@ function renderContent(){
   bindContentEvents();
 }
 
+function editVR(id,field,val){
+  var inAdded=(U._av||[]).find(function(v){return v.id===id;});
+  if(inAdded){ inAdded[field]=val; saveU(); return; }
+  if(!U[id]) U[id]={};
+  U[id][field]=val;
+  saveU();
+}
+
 function editItem(vid,idx,field,val){
   // Find the content row (in BASE or in U._av)
   var inAdded=(U._av||[]).find(function(v){return v.id===vid;});
@@ -912,6 +920,13 @@ function autoDate(checkbox,vid,idx){
 
 function bindContentEvents(){
   // Expander click — toggle sub-rows
+  // Invoice checkbox
+  document.querySelectorAll('.inv-chk').forEach(function(chk){
+    chk.addEventListener('change',function(){
+      editVR(this.dataset.vid,'invoiceSent',this.checked);
+      renderContent();
+    });
+  });
   document.querySelectorAll('.expander[data-vid]').forEach(function(btn){
     btn.addEventListener('click',function(){
       var vid=this.dataset.vid;
@@ -926,7 +941,9 @@ function buildContentTable(rows,isDoneSection){
   var html='<div class="tw"><table><thead><tr>'+
     '<th style="width:22px"></th>'+
     '<th>Créateur</th><th>Mois</th><th>Jeu</th><th>#</th><th>Prix</th>'+
-    '<th>Contrat</th><th>Statut</th><th>Drive</th><th>Reçu</th><th></th>'+
+    '<th>Contrat</th><th>Statut</th><th>Drive</th><th>Reçu</th>'+
+    (isDoneSection?'<th>Invoice</th>':'')+
+    '<th></th>'+
     '</tr></thead><tbody>';
   rows.forEach(function(v){
     var rc=receivedCount(v);
@@ -953,6 +970,15 @@ function buildContentTable(rows,isDoneSection){
       '<td>'+stBadge+'</td>'+
       '<td>'+drvCell+'</td>'+
       '<td style="text-align:center">'+recCell+'</td>'+
+      (isDoneSection?(function(){
+        var inv=v.invoiceSent||false;
+        return '<td style="text-align:center;white-space:nowrap">'+
+          '<label style="display:flex;align-items:center;gap:4px;cursor:pointer;font-size:11px">'+
+          '<input type="checkbox" class="chk inv-chk" data-vid="'+v.id+'"'+(inv?' checked':'')+'>'+
+          '<span style="background:'+(inv?'#d1fae5':'#fee2e2')+';color:'+(inv?'#065f46':'#991b1b')+
+          ';border-radius:4px;padding:2px 6px;font-size:10px;font-weight:600">'+
+          (inv?'✓ Invoice Sent':'Invoice Sent?')+'</span></label></td>';
+      })():'')+
       '<td><button class="del" onclick="delVR(\''+v.id+'\')" title="Supprimer">×</button></td>'+
       '</tr>';
     // Expanded sub-rows
